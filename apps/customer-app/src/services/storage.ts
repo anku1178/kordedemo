@@ -1,14 +1,9 @@
-// Base types for storage - platform-specific files override this
-// Metro resolves storage.web.ts on web, storage.native.ts on native
-export interface StorageAdapter {
-    getItem: (key: string) => string | null | Promise<string | null>;
-    setItem: (key: string, value: string) => void | Promise<void>;
-    removeItem: (key: string) => void | Promise<void>;
-}
+// Single storage implementation using AsyncStorage
+// AsyncStorage works on both web and native with Expo
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Default no-op implementation (overridden by platform-specific files)
-export const storage: StorageAdapter = {
-    getItem: () => null,
-    setItem: () => { },
-    removeItem: () => { },
+export const storage = {
+    getItem: (key: string): Promise<string | null> => AsyncStorage.getItem(key),
+    setItem: (key: string, value: string): Promise<void> => AsyncStorage.setItem(key, value),
+    removeItem: (key: string): Promise<void> => AsyncStorage.removeItem(key),
 };
