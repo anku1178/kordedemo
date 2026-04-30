@@ -12,6 +12,45 @@ interface AuthState {
     signOut: () => Promise<void>;
 }
 
+async function getOrCreateProfile(userId: string): Promise<Profile | null> {
+    // Try to fetch existing profile
+    const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+    if (profile) return profile;
+
+    console.warn('Profile not found, attempting to create one for:', userId);
+
+    // Profile doesn't exist — create it
+    const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+            id: userId,
+            full_name: '',
+            phone: '',
+            role: 'customer',
+        })
+        .select()
+        .single();
+
+    if (insertError) {
+        console.error('Failed to create profile:', insertError);
+        // Return a fallback profile object so the user can still log in
+        return {
+            id: userId,
+            full_name: '',
+            phone: '',
+            role: 'customer',
+            created_at: new Date().toISOString(),
+        } as Profile;
+    }
+
+    return newProfile;
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
     user: null,
     session: null,
@@ -23,12 +62,7 @@ export const useAuthStore = create<AuthState>((set) => ({
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session?.user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-
+                const profile = await getOrCreateProfile(session.user.id);
                 set({ session, user: profile, initialized: true });
             } else {
                 set({ initialized: true });
@@ -36,11 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
             supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session?.user) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+                    const profile = await getOrCreateProfile(session.user.id);
                     set({ session, user: profile });
                 } else if (event === 'SIGNED_OUT') {
                     set({ session: null, user: null });
@@ -55,8 +85,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     signIn: async (email: string, password: string) => {
         set({ loading: true });
         try {
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) return { error: error.message };
+
+            // Immediately fetch/create profile so the UI updates without waiting for onAuthStateChange
+            if (data.user) {
+                const profile = await getOrCreateProfile(data.user.id);
+                set({ session: data.session, user: profile });
+            }
+
             return { error: null };
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Login failed';
