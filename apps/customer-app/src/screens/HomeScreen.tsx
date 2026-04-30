@@ -87,6 +87,7 @@ export function HomeScreen() {
                             <Searchbar
                                 placeholder="Search products..."
                                 style={styles.searchBar}
+                                value=""
                                 editable={false}
                                 onTouchStart={() => navigation.navigate('Search')}
                             />
