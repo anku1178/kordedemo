@@ -39,5 +39,13 @@ CREATE TRIGGER products_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Enable realtime
-ALTER PUBLICATION supabase_realtime ADD TABLE products;
+-- Enable realtime (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'products'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE products;
+  END IF;
+END $$;
