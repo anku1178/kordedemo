@@ -67,6 +67,12 @@ export function HomeScreen() {
                         )}
                     </View>
                     <Text style={styles.productUnit}>{item.unit}</Text>
+                    <View style={styles.stockRow}>
+                        <View style={[styles.stockDot, { backgroundColor: item.is_available ? '#22c55e' : '#ef4444' }]} />
+                        <Text style={[styles.stockText, { color: item.is_available ? '#16a34a' : '#dc2626' }]}>
+                            {item.is_available ? 'In Stock' : 'Out of Stock'}
+                        </Text>
+                    </View>
                 </Card.Content>
             </Card>
         </TouchableOpacity>
@@ -235,5 +241,20 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: theme.colors.outlineVariant,
         marginTop: 2,
+    },
+    stockRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 4,
+    },
+    stockDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
+    stockText: {
+        fontSize: 10,
+        fontWeight: '600',
     },
 });

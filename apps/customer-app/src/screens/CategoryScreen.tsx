@@ -42,6 +42,12 @@ export function CategoryScreen() {
                         <Text style={styles.productMrp}>₹{item.mrp}</Text>
                     )}
                 </View>
+                <View style={styles.stockRow}>
+                    <View style={[styles.stockDot, { backgroundColor: item.is_available ? '#22c55e' : '#ef4444' }]} />
+                    <Text style={[styles.stockText, { color: item.is_available ? '#16a34a' : '#dc2626' }]}>
+                        {item.is_available ? 'In Stock' : 'Out of Stock'}
+                    </Text>
+                </View>
             </Card.Content>
             <Card.Actions>
                 <TouchableOpacity
@@ -126,6 +132,21 @@ const styles = StyleSheet.create({
         color: theme.colors.primary,
         fontWeight: '700',
         fontSize: 12,
+    },
+    stockRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 4,
+    },
+    stockDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
+    stockText: {
+        fontSize: 10,
+        fontWeight: '600',
     },
     emptyContainer: {
         alignItems: 'center',
