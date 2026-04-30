@@ -54,6 +54,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     addProduct: async (product: ProductInsert) => {
         try {
             const slug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
             const { error } = await supabase
                 .from('products')
                 .insert({ ...product, slug });
@@ -77,7 +78,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
             if (error) return { error: error.message };
 
-            await get().fetchProducts();
+            set({
+                products: get().products.map((p) =>
+                    p.id === id ? { ...p, ...updates } as Product : p
+                ),
+            });
             return { error: null };
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Failed to update product';
@@ -93,6 +98,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
     addCategory: async (name: string) => {
         try {
             const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
             const { error } = await supabase
                 .from('categories')
                 .insert({ name, slug });

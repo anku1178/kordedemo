@@ -42,7 +42,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         // Optimistic update
         set({
             orders: get().orders.map((o) =>
-                o.id === orderId ? { ...o, ...updates, status } : o
+                o.id === orderId ? { ...o, ...updates, status } as Order : o
             ),
         });
     },

@@ -29,10 +29,8 @@
             ]
         },
         "plugins": [
-            "expo-router",
             "expo-notifications"
         ],
-        "scheme": "korde-grocery",
         "extra": {
             "supabaseUrl": "",
             "supabaseAnonKey": "",
