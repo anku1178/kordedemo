@@ -1,0 +1,6 @@
+// Web implementation: uses localStorage (no native modules)
+export const storage = {
+    getItem: (key: string): string | null => localStorage.getItem(key),
+    setItem: (key: string, value: string): void => localStorage.setItem(key, value),
+    removeItem: (key: string): void => localStorage.removeItem(key),
+};

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { Platform } from 'react-native';
 import type { Product } from 'shared-types';
+import { storage } from '../services/storage';
 
 export interface CartItem {
     product: Product;
@@ -21,32 +21,9 @@ interface CartState {
 
 const CART_STORAGE_KEY = 'korde_cart';
 
-// Platform-aware storage: localStorage on web, MMKV on native
-let storage: {
-    getString: (key: string) => string | undefined;
-    set: (key: string, value: string) => void;
-    delete: (key: string) => void;
-};
-
-if (Platform.OS === 'web') {
-    storage = {
-        getString: (key: string) => localStorage.getItem(key) ?? undefined,
-        set: (key: string, value: string) => localStorage.setItem(key, value),
-        delete: (key: string) => localStorage.removeItem(key),
-    };
-} else {
-    const { MMKV } = require('react-native-mmkv');
-    const mmkv = new MMKV();
-    storage = {
-        getString: (key: string) => mmkv.getString(key),
-        set: (key: string, value: string) => mmkv.set(key, value),
-        delete: (key: string) => mmkv.delete(key),
-    };
-}
-
 function loadCart(): CartItem[] {
     try {
-        const data = storage.getString(CART_STORAGE_KEY);
+        const data = storage.getItem(CART_STORAGE_KEY);
         return data ? JSON.parse(data) : [];
     } catch {
         return [];
@@ -54,7 +31,7 @@ function loadCart(): CartItem[] {
 }
 
 function saveCart(items: CartItem[]) {
-    storage.set(CART_STORAGE_KEY, JSON.stringify(items));
+    storage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
