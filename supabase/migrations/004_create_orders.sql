@@ -18,13 +18,14 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 -- Indexes
-CREATE INDEX idx_orders_customer_id ON orders(customer_id);
-CREATE INDEX idx_orders_status ON orders(status);
-CREATE INDEX idx_orders_order_number ON orders(order_number);
-CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
-CREATE INDEX idx_orders_customer_outside ON orders(customer_outside) WHERE customer_outside = true;
+CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_order_number ON orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_outside ON orders(customer_outside) WHERE customer_outside = true;
 
 -- Auto-update updated_at timestamp
+DROP TRIGGER IF EXISTS orders_updated_at ON orders;
 CREATE TRIGGER orders_updated_at
   BEFORE UPDATE ON orders
   FOR EACH ROW

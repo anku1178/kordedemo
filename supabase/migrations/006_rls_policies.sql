@@ -28,21 +28,23 @@ $$ LANGUAGE sql SECURITY DEFINER STABLE;
 -- Categories policies
 -- ============================================
 
--- Anyone can read categories
+DROP POLICY IF EXISTS "Categories are viewable by everyone" ON categories;
 CREATE POLICY "Categories are viewable by everyone"
   ON categories FOR SELECT
   USING (true);
 
--- Only admin can insert/update/delete categories
+DROP POLICY IF EXISTS "Admin can insert categories" ON categories;
 CREATE POLICY "Admin can insert categories"
   ON categories FOR INSERT
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admin can update categories" ON categories;
 CREATE POLICY "Admin can update categories"
   ON categories FOR UPDATE
   USING (is_admin())
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admin can delete categories" ON categories;
 CREATE POLICY "Admin can delete categories"
   ON categories FOR DELETE
   USING (is_admin());
@@ -51,21 +53,23 @@ CREATE POLICY "Admin can delete categories"
 -- Products policies
 -- ============================================
 
--- Customers can only see available products
+DROP POLICY IF EXISTS "Available products are viewable by everyone" ON products;
 CREATE POLICY "Available products are viewable by everyone"
   ON products FOR SELECT
   USING (is_available = true OR is_admin());
 
--- Only admin can insert/update/delete products
+DROP POLICY IF EXISTS "Admin can insert products" ON products;
 CREATE POLICY "Admin can insert products"
   ON products FOR INSERT
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admin can update products" ON products;
 CREATE POLICY "Admin can update products"
   ON products FOR UPDATE
   USING (is_admin())
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admin can delete products" ON products;
 CREATE POLICY "Admin can delete products"
   ON products FOR DELETE
   USING (is_admin());
@@ -74,18 +78,18 @@ CREATE POLICY "Admin can delete products"
 -- Profiles policies
 -- ============================================
 
--- Users can read their own profile
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile"
   ON profiles FOR SELECT
   USING (auth.uid() = id OR is_admin());
 
--- Users can update their own profile (but not role)
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id AND role = current_user_role());
 
--- Admin can update any profile
+DROP POLICY IF EXISTS "Admin can update any profile" ON profiles;
 CREATE POLICY "Admin can update any profile"
   ON profiles FOR UPDATE
   USING (is_admin())
@@ -95,21 +99,22 @@ CREATE POLICY "Admin can update any profile"
 -- Orders policies
 -- ============================================
 
--- Customers can see their own orders, admin can see all
+DROP POLICY IF EXISTS "Customers can view own orders" ON orders;
 CREATE POLICY "Customers can view own orders"
   ON orders FOR SELECT
   USING (auth.uid() = customer_id OR is_admin());
 
--- Customers can insert their own orders
+DROP POLICY IF EXISTS "Customers can create orders" ON orders;
 CREATE POLICY "Customers can create orders"
   ON orders FOR INSERT
   WITH CHECK (auth.uid() = customer_id);
 
--- Admin can update any order, customers can update their own (for customer_outside toggle)
+DROP POLICY IF EXISTS "Admin can update any order" ON orders;
 CREATE POLICY "Admin can update any order"
   ON orders FOR UPDATE
   USING (is_admin());
 
+DROP POLICY IF EXISTS "Customers can toggle outside status" ON orders;
 CREATE POLICY "Customers can toggle outside status"
   ON orders FOR UPDATE
   USING (auth.uid() = customer_id)
@@ -119,7 +124,7 @@ CREATE POLICY "Customers can toggle outside status"
 -- Order items policies
 -- ============================================
 
--- Customers can see items from their own orders, admin can see all
+DROP POLICY IF EXISTS "Customers can view own order items" ON order_items;
 CREATE POLICY "Customers can view own order items"
   ON order_items FOR SELECT
   USING (
@@ -130,15 +135,17 @@ CREATE POLICY "Customers can view own order items"
     )
   );
 
--- Only admin can insert/update/delete order items (via backend)
+DROP POLICY IF EXISTS "Admin can insert order items" ON order_items;
 CREATE POLICY "Admin can insert order items"
   ON order_items FOR INSERT
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "Admin can update order items" ON order_items;
 CREATE POLICY "Admin can update order items"
   ON order_items FOR UPDATE
   USING (is_admin());
 
+DROP POLICY IF EXISTS "Admin can delete order items" ON order_items;
 CREATE POLICY "Admin can delete order items"
   ON order_items FOR DELETE
   USING (is_admin());
