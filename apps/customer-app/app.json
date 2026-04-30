@@ -32,8 +32,8 @@
             "expo-notifications"
         ],
         "extra": {
-            "supabaseUrl": "",
-            "supabaseAnonKey": "",
+            "supabaseUrl": "https://hfuafzhyqcgterzmajtg.supabase.co",
+            "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmdWFmemh5cWNndGVyem1hanRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTU3ODgsImV4cCI6MjA5MzEzMTc4OH0.ClZee3_P9nCGjTUz7VnSwzlT4aT-921RJH5OpoCMeE8",
             "razorpayKeyId": ""
         }
     }
