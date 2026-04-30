@@ -1,0 +1,11 @@
+{
+    "name": "korde-grocery",
+    "version": "1.0.0",
+    "private": true,
+    "description": "Korde Grocery Store - E-Commerce Pickup Platform",
+    "scripts": {
+        "dev:app": "pnpm --filter customer-app dev",
+        "dev:admin": "pnpm --filter admin-dashboard dev",
+        "build:admin": "pnpm --filter admin-dashboard build"
+    }
+}

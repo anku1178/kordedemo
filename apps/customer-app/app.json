@@ -1,0 +1,42 @@
+{
+    "expo": {
+        "name": "Korde Grocery",
+        "slug": "korde-grocery",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "splash": {
+            "image": "./assets/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#4CAF50"
+        },
+        "assetBundlePatterns": [
+            "**/*"
+        ],
+        "ios": {
+            "supportsTablet": false,
+            "bundleIdentifier": "com.kordegrocery.app"
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/adaptive-icon.png",
+                "backgroundColor": "#4CAF50"
+            },
+            "package": "com.kordegrocery.app",
+            "permissions": [
+                "NOTIFICATIONS"
+            ]
+        },
+        "plugins": [
+            "expo-router",
+            "expo-notifications"
+        ],
+        "scheme": "korde-grocery",
+        "extra": {
+            "supabaseUrl": "",
+            "supabaseAnonKey": "",
+            "razorpayKeyId": ""
+        }
+    }
+}
