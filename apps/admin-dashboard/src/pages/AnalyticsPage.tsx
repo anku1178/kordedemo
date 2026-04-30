@@ -59,8 +59,8 @@ export default function AnalyticsPage() {
     const totalRevenue = useMemo(
         () =>
             filteredOrders
-                .filter((o) => o.payment_status === 'paid')
-                .reduce((sum, o) => sum + (o.total_amount || 0), 0),
+                .filter((o) => o.payment_status === 'completed')
+                .reduce((sum, o) => sum + (o.total || 0), 0),
         [filteredOrders]
     );
 
@@ -86,14 +86,14 @@ export default function AnalyticsPage() {
     const dailyRevenue = useMemo(() => {
         const daily: Record<string, { date: string; revenue: number; orders: number }> = {};
         filteredOrders
-            .filter((o) => o.payment_status === 'paid')
+            .filter((o) => o.payment_status === 'completed')
             .forEach((o) => {
                 const date = new Date(o.created_at).toLocaleDateString('en-IN', {
                     day: '2-digit',
                     month: 'short',
                 });
                 if (!daily[date]) daily[date] = { date, revenue: 0, orders: 0 };
-                daily[date].revenue += o.total_amount || 0;
+                daily[date].revenue += o.total || 0;
                 daily[date].orders += 1;
             });
         return Object.values(daily).sort(
@@ -105,9 +105,9 @@ export default function AnalyticsPage() {
     const topProducts = useMemo(() => {
         const productSales: Record<string, { name: string; quantity: number; revenue: number }> = {};
         filteredOrders
-            .filter((o) => o.payment_status === 'paid' && o.order_items)
+            .filter((o) => o.payment_status === 'completed' && o.order_items)
             .forEach((o) => {
-                o.order_items.forEach((item) => {
+                o.order_items!.forEach((item) => {
                     if (!productSales[item.product_id]) {
                         productSales[item.product_id] = {
                             name: item.product_name || 'Unknown',
@@ -378,7 +378,7 @@ export default function AnalyticsPage() {
                                         {(order as any).customer?.full_name || '—'}
                                     </td>
                                     <td className="py-3 px-4 font-medium text-gray-900">
-                                        {formatCurrency(order.total_amount || 0)}
+                                        {formatCurrency(order.total || 0)}
                                     </td>
                                     <td className="py-3 px-4">
                                         <span
