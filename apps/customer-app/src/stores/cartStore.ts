@@ -9,6 +9,7 @@ export interface CartItem {
 
 interface CartState {
     items: CartItem[];
+    hydrated: boolean;
     addItem: (product: Product, quantity?: number) => void;
     removeItem: (productId: string) => void;
     updateQuantity: (productId: string, quantity: number) => void;
@@ -17,25 +18,36 @@ interface CartState {
     getSubtotal: () => number;
     getDiscount: () => number;
     getTotal: () => number;
+    hydrate: () => Promise<void>;
 }
 
 const CART_STORAGE_KEY = 'korde_cart';
 
-function loadCart(): CartItem[] {
+async function loadCart(): Promise<CartItem[]> {
     try {
-        const data = storage.getItem(CART_STORAGE_KEY);
+        const data = await storage.getItem(CART_STORAGE_KEY);
         return data ? JSON.parse(data) : [];
     } catch {
         return [];
     }
 }
 
-function saveCart(items: CartItem[]) {
-    storage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+async function saveCart(items: CartItem[]) {
+    try {
+        await storage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+        console.warn('Failed to save cart:', e);
+    }
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
-    items: loadCart(),
+    items: [],
+    hydrated: false,
+
+    hydrate: async () => {
+        const items = await loadCart();
+        set({ items, hydrated: true });
+    },
 
     addItem: (product: Product, quantity: number = 1) => {
         const { items } = get();

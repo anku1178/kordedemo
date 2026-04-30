@@ -1,17 +1,12 @@
-// This file provides TypeScript types only.
-// At bundle time, Metro resolves platform-specific files:
-//   - storage.web.ts (for web)
-//   - storage.native.ts (for native)
-// This base file is the fallback and should NOT be imported at runtime.
-
+// Base types for storage - platform-specific files override this
+// Metro resolves storage.web.ts on web, storage.native.ts on native
 export interface StorageAdapter {
-    getItem: (key: string) => string | null;
-    setItem: (key: string, value: string) => void;
-    removeItem: (key: string) => void;
+    getItem: (key: string) => string | null | Promise<string | null>;
+    setItem: (key: string, value: string) => void | Promise<void>;
+    removeItem: (key: string) => void | Promise<void>;
 }
 
-// Default export for TypeScript type resolution
-// (Metro will use .web.ts or .native.ts instead)
+// Default no-op implementation (overridden by platform-specific files)
 export const storage: StorageAdapter = {
     getItem: () => null,
     setItem: () => { },
