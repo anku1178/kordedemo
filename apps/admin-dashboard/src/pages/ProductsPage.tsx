@@ -4,7 +4,7 @@ import { formatCurrency } from '../utils/helpers';
 import type { ProductInsert } from 'shared-types';
 
 export function ProductsPage() {
-    const { products, categories, fetchProducts, fetchCategories, addProduct, updateProduct, deleteProduct, toggleAvailability, loading } = useProductStore();
+    const { products, categories, fetchProducts, fetchCategories, addProduct, updateProduct, deleteProduct, toggleAvailability, addCategory, updateCategory, deleteCategory, loading } = useProductStore();
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
@@ -16,6 +16,11 @@ export function ProductsPage() {
         is_available: true,
         category_id: '',
     });
+
+    // Category management state
+    const [showCatForm, setShowCatForm] = useState(false);
+    const [editingCatId, setEditingCatId] = useState<string | null>(null);
+    const [catName, setCatName] = useState('');
 
     useEffect(() => {
         fetchProducts();
@@ -55,19 +60,56 @@ export function ProductsPage() {
         resetForm();
     };
 
+    const handleCatSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (editingCatId) {
+            await updateCategory(editingCatId, catName);
+        } else {
+            await addCategory(catName);
+        }
+        setCatName('');
+        setEditingCatId(null);
+        setShowCatForm(false);
+    };
+
+    const handleEditCat = (cat: typeof categories[0]) => {
+        setCatName(cat.name);
+        setEditingCatId(cat.id);
+        setShowCatForm(true);
+    };
+
+    const handleDeleteCat = async (id: string) => {
+        const productCount = products.filter((p) => p.category_id === id).length;
+        if (productCount > 0) {
+            alert(`Cannot delete: ${productCount} product(s) are in this category. Move them first.`);
+            return;
+        }
+        if (confirm('Delete this category?')) {
+            await deleteCategory(id);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-                    <p className="text-sm text-gray-500">{products.length} products</p>
+                    <p className="text-sm text-gray-500">{products.length} products · {categories.length} categories</p>
                 </div>
-                <button
-                    onClick={() => { resetForm(); setShowForm(true); }}
-                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition"
-                >
-                    + Add Product
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => { setCatName(''); setEditingCatId(null); setShowCatForm(true); }}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition"
+                    >
+                        + Category
+                    </button>
+                    <button
+                        onClick={() => { resetForm(); setShowForm(true); }}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition"
+                    >
+                        + Add Product
+                    </button>
+                </div>
             </div>
 
             {/* Search */}
@@ -156,6 +198,75 @@ export function ProductsPage() {
                     </form>
                 </div>
             )}
+
+            {/* Category Form Modal */}
+            {showCatForm && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => { setShowCatForm(false); setCatName(''); setEditingCatId(null); }}>
+                    <form className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()} onSubmit={handleCatSubmit}>
+                        <h2 className="text-xl font-bold">{editingCatId ? 'Edit Category' : 'Add Category'}</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                            <input
+                                type="text"
+                                required
+                                value={catName}
+                                onChange={(e) => setCatName(e.target.value)}
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                placeholder="e.g. Fruits & Vegetables"
+                            />
+                        </div>
+                        <div className="flex gap-3">
+                            <button type="button" onClick={() => { setShowCatForm(false); setCatName(''); setEditingCatId(null); }} className="flex-1 py-2 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition">
+                                Cancel
+                            </button>
+                            <button type="submit" className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition">
+                                {editingCatId ? 'Update' : 'Add Category'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* Categories Table */}
+            <div className="bg-white rounded-xl border overflow-hidden">
+                <div className="px-4 py-3 border-b bg-gray-50">
+                    <h2 className="font-semibold text-gray-700">Categories</h2>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                        <thead className="bg-gray-50 border-b">
+                            <tr>
+                                <th className="text-left px-4 py-2 font-semibold text-gray-600">Name</th>
+                                <th className="text-left px-4 py-2 font-semibold text-gray-600">Slug</th>
+                                <th className="text-center px-4 py-2 font-semibold text-gray-600">Products</th>
+                                <th className="text-center px-4 py-2 font-semibold text-gray-600">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categories.map((cat) => (
+                                <tr key={cat.id} className="border-b hover:bg-gray-50">
+                                    <td className="px-4 py-2 font-medium text-gray-900">{cat.name}</td>
+                                    <td className="px-4 py-2 text-gray-400">{cat.slug}</td>
+                                    <td className="px-4 py-2 text-center">{products.filter((p) => p.category_id === cat.id).length}</td>
+                                    <td className="px-4 py-2 text-center">
+                                        <button onClick={() => handleEditCat(cat)} className="text-blue-600 hover:text-blue-800 font-medium mr-3">
+                                            Edit
+                                        </button>
+                                        <button onClick={() => handleDeleteCat(cat.id)} className="text-red-600 hover:text-red-800 font-medium">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {categories.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="px-4 py-6 text-center text-gray-400">No categories yet</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             {/* Products Table */}
             <div className="bg-white rounded-xl border overflow-hidden">

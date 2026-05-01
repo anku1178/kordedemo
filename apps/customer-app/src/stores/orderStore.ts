@@ -17,6 +17,7 @@ interface OrderState {
         total: number;
     }) => Promise<{ order: Order | null; error: string | null }>;
     updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+    cancelOrder: (orderId: string) => Promise<{ error: string | null }>;
     setCustomerOutside: (orderId: string, outside: boolean) => Promise<void>;
     subscribeToOrder: (orderId: string) => () => void;
     setCurrentOrder: (order: Order | null) => void;
@@ -133,6 +134,31 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         }
 
         await supabase.from('orders').update(updates).eq('id', orderId);
+    },
+
+    cancelOrder: async (orderId: string) => {
+        try {
+            const { error } = await supabase
+                .from('orders')
+                .update({ status: 'cancelled' })
+                .eq('id', orderId);
+
+            if (error) return { error: error.message };
+
+            const { currentOrder, orders } = get();
+            if (currentOrder?.id === orderId) {
+                set({ currentOrder: { ...currentOrder, status: 'cancelled' } as Order });
+            }
+            set({
+                orders: orders.map((o) =>
+                    o.id === orderId ? { ...o, status: 'cancelled' } : o
+                ),
+            });
+            return { error: null };
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to cancel order';
+            return { error: message };
+        }
     },
 
     setCustomerOutside: async (orderId: string, outside: boolean) => {

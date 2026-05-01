@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, Button, Switch } from 'react-native-paper';
 import { useRoute } from '@react-navigation/native';
 import { useOrderStore } from '../stores/orderStore';
@@ -17,8 +17,9 @@ const STATUS_STEPS: { key: OrderStatus; label: string; icon: string }[] = [
 export function OrderTrackingScreen() {
     const route = useRoute<any>();
     const { orderId } = route.params;
-    const { currentOrder, fetchOrderById, setCustomerOutside, subscribeToOrder } = useOrderStore();
+    const { currentOrder, fetchOrderById, setCustomerOutside, subscribeToOrder, cancelOrder } = useOrderStore();
     const [outside, setOutside] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
 
     useEffect(() => {
         fetchOrderById(orderId).then((order) => {
@@ -42,6 +43,29 @@ export function OrderTrackingScreen() {
         if (currentOrder) {
             await setCustomerOutside(currentOrder.id, value);
         }
+    };
+
+    const handleCancelOrder = () => {
+        Alert.alert(
+            'Cancel Order',
+            'Are you sure you want to cancel this order? This cannot be undone.',
+            [
+                { text: 'No', style: 'cancel' },
+                {
+                    text: 'Yes, Cancel',
+                    style: 'destructive',
+                    onPress: async () => {
+                        if (!currentOrder) return;
+                        setCancelling(true);
+                        const { error } = await cancelOrder(currentOrder.id);
+                        setCancelling(false);
+                        if (error) {
+                            Alert.alert('Error', error);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     if (!currentOrder) return null;
@@ -112,6 +136,23 @@ export function OrderTrackingScreen() {
                         })
                     )}
                 </View>
+
+                {/* Cancel Order Button */}
+                {!isCancelled && !isHandedOver && currentOrder.status === 'placed' && (
+                    <View style={styles.cancelSection}>
+                        <Button
+                            mode="outlined"
+                            onPress={handleCancelOrder}
+                            textColor={theme.colors.error}
+                            buttonColor={theme.colors.errorContainer}
+                            loading={cancelling}
+                            disabled={cancelling}
+                            style={styles.cancelButton}
+                        >
+                            Cancel Order
+                        </Button>
+                    </View>
+                )}
 
                 {/* I'm Outside Toggle */}
                 {!isCancelled && !isHandedOver && (isReady || currentOrder.status === 'confirmed' || currentOrder.status === 'picking') && (
@@ -298,6 +339,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         color: theme.colors.error,
+    },
+    cancelSection: {
+        marginBottom: 24,
+    },
+    cancelButton: {
+        borderColor: theme.colors.error,
+        borderWidth: 1,
     },
     outsideSection: {
         backgroundColor: theme.colors.surface,

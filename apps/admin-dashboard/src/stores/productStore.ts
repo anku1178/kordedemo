@@ -12,6 +12,8 @@ interface ProductState {
     updateProduct: (id: string, updates: ProductUpdate) => Promise<{ error: string | null }>;
     deleteProduct: (id: string) => Promise<void>;
     addCategory: (name: string) => Promise<{ error: string | null }>;
+    updateCategory: (id: string, name: string) => Promise<{ error: string | null }>;
+    deleteCategory: (id: string) => Promise<{ error: string | null }>;
     toggleAvailability: (id: string, available: boolean) => Promise<void>;
 }
 
@@ -109,6 +111,46 @@ export const useProductStore = create<ProductState>((set, get) => ({
             return { error: null };
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'Failed to add category';
+            return { error: message };
+        }
+    },
+
+    updateCategory: async (id: string, name: string) => {
+        try {
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+            const { error } = await supabase
+                .from('categories')
+                .update({ name, slug })
+                .eq('id', id);
+
+            if (error) return { error: error.message };
+
+            set({
+                categories: get().categories.map((c) =>
+                    c.id === id ? { ...c, name, slug } : c
+                ),
+            });
+            return { error: null };
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to update category';
+            return { error: message };
+        }
+    },
+
+    deleteCategory: async (id: string) => {
+        try {
+            const { error } = await supabase
+                .from('categories')
+                .delete()
+                .eq('id', id);
+
+            if (error) return { error: error.message };
+
+            set({ categories: get().categories.filter((c) => c.id !== id) });
+            return { error: null };
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to delete category';
             return { error: message };
         }
     },

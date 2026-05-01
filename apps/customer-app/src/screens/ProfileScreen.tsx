@@ -8,9 +8,10 @@ export function ProfileScreen() {
     const { user, updateProfile, signOut } = useAuthStore();
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState(user?.full_name || '');
+    const [phone, setPhone] = useState(user?.phone || '');
 
     const handleSave = async () => {
-        await updateProfile({ full_name: name });
+        await updateProfile({ full_name: name, phone });
         setEditing(false);
     };
 
@@ -44,10 +45,24 @@ export function ProfileScreen() {
                             outlineColor={theme.colors.outline}
                             activeOutlineColor={theme.colors.primary}
                         />
+                        <TextInput
+                            label="Phone Number"
+                            value={phone}
+                            onChangeText={setPhone}
+                            mode="outlined"
+                            style={styles.input}
+                            keyboardType="phone-pad"
+                            outlineColor={theme.colors.outline}
+                            activeOutlineColor={theme.colors.primary}
+                        />
                         <View style={styles.editActions}>
                             <Button
                                 mode="outlined"
-                                onPress={() => { setEditing(false); setName(user?.full_name || ''); }}
+                                onPress={() => {
+                                    setEditing(false);
+                                    setName(user?.full_name || '');
+                                    setPhone(user?.phone || '');
+                                }}
                                 style={styles.editButton}
                             >
                                 Cancel
@@ -71,6 +86,10 @@ export function ProfileScreen() {
                         <View style={styles.detailRow}>
                             <Text style={styles.detailLabel}>Email</Text>
                             <Text style={styles.detailValue}>{user?.email || 'Not set'}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>Phone</Text>
+                            <Text style={styles.detailValue}>{user?.phone || 'Not set'}</Text>
                         </View>
                         <Text style={styles.editHint}>Tap to edit</Text>
                     </TouchableOpacity>
