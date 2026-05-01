@@ -167,6 +167,19 @@ export function OrderTrackingScreen() {
                             {currentOrder.payment_method === 'pay_on_pickup' ? '💵 Pay on Pickup' : (currentOrder.payment_method || 'Online')}
                         </Text>
                     </View>
+                    <View style={styles.paymentRow}>
+                        <Text style={styles.paymentLabel}>Payment Status</Text>
+                        <Text style={[
+                            styles.paymentValue,
+                            currentOrder.payment_status === 'completed' && { color: '#4CAF50' },
+                            currentOrder.payment_status === 'pending' && { color: '#FF9800' },
+                        ]}>
+                            {currentOrder.payment_status === 'completed' ? '✅ Paid' :
+                                currentOrder.payment_status === 'pending' ? '⏳ Pay at Store' :
+                                    currentOrder.payment_status === 'failed' ? '❌ Failed' :
+                                        currentOrder.payment_status || 'Pending'}
+                        </Text>
+                    </View>
                 </View>
             </ScrollView>
         </View>

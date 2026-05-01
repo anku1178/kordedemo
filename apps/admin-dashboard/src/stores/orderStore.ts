@@ -35,7 +35,10 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     updateOrderStatus: async (orderId: string, status: OrderStatus) => {
         const updates: Record<string, unknown> = { status };
         if (status === 'ready') updates.ready_at = new Date().toISOString();
-        if (status === 'handed_over') updates.picked_up_at = new Date().toISOString();
+        if (status === 'handed_over') {
+            updates.picked_up_at = new Date().toISOString();
+            updates.payment_status = 'completed';
+        }
 
         await supabase.from('orders').update(updates).eq('id', orderId);
 
