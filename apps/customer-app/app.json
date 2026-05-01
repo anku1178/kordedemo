@@ -4,33 +4,21 @@
         "slug": "korde-grocery",
         "version": "1.0.0",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
         "userInterfaceStyle": "light",
         "splash": {
-            "image": "./assets/splash.png",
             "resizeMode": "contain",
-            "backgroundColor": "#4CAF50"
+            "backgroundColor": "#2E7D32"
         },
-        "assetBundlePatterns": [
-            "**/*"
-        ],
         "ios": {
             "supportsTablet": false,
             "bundleIdentifier": "com.kordegrocery.app"
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
-                "backgroundColor": "#4CAF50"
+                "backgroundColor": "#2E7D32"
             },
-            "package": "com.kordegrocery.app",
-            "permissions": [
-                "NOTIFICATIONS"
-            ]
+            "package": "com.kordegrocery.app"
         },
-        "plugins": [
-            "expo-notifications"
-        ],
         "extra": {
             "supabaseUrl": "https://hfuafzhyqcgterzmajtg.supabase.co",
             "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmdWFmemh5cWNndGVyem1hanRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTU3ODgsImV4cCI6MjA5MzEzMTc4OH0.ClZee3_P9nCGjTUz7VnSwzlT4aT-921RJH5OpoCMeE8",
