@@ -81,6 +81,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
                     total: params.total,
                     status: 'placed',
                     payment_status: 'pending',
+                    payment_method: 'pay_on_pickup',
                     customer_outside: params.customerOutside,
                 })
                 .select()

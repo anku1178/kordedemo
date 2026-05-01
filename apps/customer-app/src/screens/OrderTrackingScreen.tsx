@@ -163,7 +163,9 @@ export function OrderTrackingScreen() {
                     </View>
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Payment Method</Text>
-                        <Text style={styles.paymentValue}>{currentOrder.payment_method || 'Online'}</Text>
+                        <Text style={styles.paymentValue}>
+                            {currentOrder.payment_method === 'pay_on_pickup' ? '💵 Pay on Pickup' : (currentOrder.payment_method || 'Online')}
+                        </Text>
                     </View>
                 </View>
             </ScrollView>

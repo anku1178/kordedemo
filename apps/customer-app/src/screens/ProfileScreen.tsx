@@ -24,7 +24,7 @@ export function ProfileScreen() {
                     </Text>
                 </View>
                 <Text style={styles.name}>{user?.full_name || 'Customer'}</Text>
-                <Text style={styles.phone}>{user?.phone || ''}</Text>
+                <Text style={styles.phone}>{user?.email || ''}</Text>
             </View>
 
             <Divider />
@@ -69,8 +69,8 @@ export function ProfileScreen() {
                             <Text style={styles.detailValue}>{user?.full_name || 'Not set'}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Phone</Text>
-                            <Text style={styles.detailValue}>{user?.phone || 'Not set'}</Text>
+                            <Text style={styles.detailLabel}>Email</Text>
+                            <Text style={styles.detailValue}>{user?.email || 'Not set'}</Text>
                         </View>
                         <Text style={styles.editHint}>Tap to edit</Text>
                     </TouchableOpacity>

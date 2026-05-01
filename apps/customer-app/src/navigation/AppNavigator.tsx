@@ -101,17 +101,14 @@ function HomeTabs() {
     );
 }
 
-// TEMP: Set to true to bypass auth and see the UI without login
-const BYPASS_AUTH = true;
-
 export function AppNavigator() {
     const { user, initialized } = useAuthStore();
 
-    if (!initialized && !BYPASS_AUTH) {
+    if (!initialized) {
         return null; // Show splash screen
     }
 
-    const showApp = BYPASS_AUTH || user;
+    const showApp = !!user;
 
     return (
         <PaperProvider theme={theme}>

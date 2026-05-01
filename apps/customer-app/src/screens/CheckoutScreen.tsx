@@ -11,13 +11,9 @@ export function CheckoutScreen() {
     const { items, getSubtotal, getDiscount, getTotal, clearCart } = useCartStore();
     const { createOrder, loading } = useOrderStore();
     const [customerOutside, setCustomerOutside] = useState(false);
-    const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     const handlePlaceOrder = async () => {
-        setPaymentProcessing(true);
-
         try {
-            // Create order in database
             const orderItems = items.map((item) => ({
                 productId: item.product.id,
                 productName: item.product.name,
@@ -39,46 +35,12 @@ export function CheckoutScreen() {
                 return;
             }
 
-            // Initiate Razorpay payment
-            // Note: In production, you'd use the Razorpay SDK here
-            // For now, we'll simulate the payment flow
-            const paymentSuccess = await initiateRazorpayPayment(result.order.order_number, getTotal());
-
-            if (paymentSuccess) {
-                clearCart();
-                navigation.replace('OrderTracking', { orderId: result.order.id });
-            } else {
-                Alert.alert('Payment Failed', 'Your order was created but payment failed. Please try again.');
-            }
+            // Pay on Pickup — no payment gateway needed
+            clearCart();
+            navigation.replace('OrderTracking', { orderId: result.order.id });
         } catch (error) {
             Alert.alert('Error', 'Something went wrong. Please try again.');
-        } finally {
-            setPaymentProcessing(false);
         }
-    };
-
-    const initiateRazorpayPayment = async (orderNumber: string, amount: number): Promise<boolean> => {
-        // In production, this would use the actual Razorpay SDK:
-        //
-        // const options = {
-        //   description: `Order ${orderNumber}`,
-        //   image: '',
-        //   currency: 'INR',
-        //   key: RAZORPAY_KEY_ID,
-        //   amount: amount * 100, // in paise
-        //   name: 'Korde Grocery',
-        //   order_id: razorpayOrderId, // from server
-        //   prefill: { contact: userPhone },
-        //   theme: { color: theme.colors.primary },
-        // };
-        // Razorpay.open(options).then((data) => {
-        //   // verify payment with edge function
-        // });
-
-        // For now, simulate success
-        return new Promise((resolve) => {
-            setTimeout(() => resolve(true), 1500);
-        });
     };
 
     return (
@@ -157,7 +119,12 @@ export function CheckoutScreen() {
                     </View>
                     <View style={styles.paymentRow}>
                         <Text style={styles.paymentLabel}>Payment Method</Text>
-                        <Text style={styles.paymentValue}>UPI / Card / Wallet</Text>
+                        <Text style={styles.paymentValue}>💵 Pay on Pickup</Text>
+                    </View>
+                    <View style={styles.payOnPickupNote}>
+                        <Text style={styles.payOnPickupText}>
+                            Pay at the store counter when you pick up your order
+                        </Text>
                     </View>
                 </View>
             </ScrollView>
@@ -167,13 +134,13 @@ export function CheckoutScreen() {
                 <Button
                     mode="contained"
                     onPress={handlePlaceOrder}
-                    loading={paymentProcessing || loading}
-                    disabled={paymentProcessing || loading || items.length === 0}
+                    loading={loading}
+                    disabled={loading || items.length === 0}
                     buttonColor={theme.colors.primary}
                     style={styles.placeOrderButton}
                     contentStyle={styles.placeOrderButtonContent}
                 >
-                    PAY ₹{getTotal().toFixed(2)} & PLACE ORDER
+                    PLACE ORDER • ₹{getTotal().toFixed(2)}
                 </Button>
             </View>
         </View>
@@ -283,6 +250,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: theme.colors.primary,
+    },
+    payOnPickupNote: {
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: 8,
+        padding: 12,
+        marginTop: 8,
+    },
+    payOnPickupText: {
+        fontSize: 12,
+        color: theme.colors.primary,
+        textAlign: 'center',
     },
     bottomBar: {
         position: 'absolute',

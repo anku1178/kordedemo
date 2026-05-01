@@ -9,10 +9,41 @@ interface AuthState {
     initialized: boolean;
 
     initialize: () => Promise<void>;
-    signInWithPhone: (phone: string) => Promise<{ error: string | null }>;
-    verifyOtp: (phone: string, otp: string) => Promise<{ error: string | null }>;
+    signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+    signUp: (email: string, password: string, fullName: string) => Promise<{ error: string | null }>;
     signOut: () => Promise<void>;
     updateProfile: (updates: Partial<Profile>) => Promise<void>;
+}
+
+async function getOrCreateProfile(userId: string, email?: string): Promise<Profile | null> {
+    try {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+        if (profile) {
+            // Merge email from auth session (not stored in profiles table)
+            return { ...profile, email: email || null } as Profile;
+        }
+
+        // Profile doesn't exist yet (trigger might not have fired), create it
+        const { data: newProfile, error } = await supabase
+            .from('profiles')
+            .insert({ id: userId, role: 'customer' })
+            .select()
+            .single();
+
+        if (error) {
+            console.warn('Could not create profile:', error.message);
+            return null;
+        }
+
+        return { ...newProfile, email: email || null } as Profile;
+    } catch {
+        return null;
+    }
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -26,25 +57,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const { data: { session } } = await supabase.auth.getSession();
 
             if (session?.user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', session.user.id)
-                    .single();
-
+                const profile = await getOrCreateProfile(session.user.id, session.user.email);
                 set({ session, user: profile, initialized: true });
             } else {
                 set({ initialized: true });
             }
 
-            // Listen for auth changes
             supabase.auth.onAuthStateChange(async (event, session) => {
-                if (event === 'SIGNED_IN' && session?.user) {
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+                if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+                    const profile = await getOrCreateProfile(session.user.id, session.user.email);
                     set({ session, user: profile });
                 } else if (event === 'SIGNED_OUT') {
                     set({ session: null, user: null });
@@ -56,34 +77,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
     },
 
-    signInWithPhone: async (phone: string) => {
+    signIn: async (email: string, password: string) => {
         set({ loading: true });
         try {
-            const { error } = await supabase.auth.signInWithOtp({
-                phone,
-            });
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) return { error: error.message };
             return { error: null };
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'Failed to send OTP';
+            const message = error instanceof Error ? error.message : 'Sign in failed';
             return { error: message };
         } finally {
             set({ loading: false });
         }
     },
 
-    verifyOtp: async (phone: string, otp: string) => {
+    signUp: async (email: string, password: string, fullName: string) => {
         set({ loading: true });
         try {
-            const { error } = await supabase.auth.verifyOtp({
-                phone,
-                token: otp,
-                type: 'sms',
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { full_name: fullName },
+                },
             });
             if (error) return { error: error.message };
             return { error: null };
         } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : 'OTP verification failed';
+            const message = error instanceof Error ? error.message : 'Sign up failed';
             return { error: message };
         } finally {
             set({ loading: false });
