@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Text, Card, Chip } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useOrderStore } from '../stores/orderStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 import type { Order, OrderStatus } from 'shared-types';
 
-const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string }> = {
-    placed: { label: 'Placed', color: '#9E9E9E', bg: '#F5F5F5' },
-    confirmed: { label: 'Confirmed', color: '#2196F3', bg: '#E3F2FD' },
-    picking: { label: 'Picking', color: '#FF9800', bg: '#FFF3E0' },
-    ready: { label: 'Ready', color: '#4CAF50', bg: '#E8F5E9' },
-    handed_over: { label: 'Completed', color: '#4CAF50', bg: '#C8E6C9' },
-    cancelled: { label: 'Cancelled', color: '#F44336', bg: '#FFEBEE' },
+const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string; emoji: string }> = {
+    placed: { label: 'Placed', color: '#616161', bg: '#F5F5F5', emoji: '📋' },
+    confirmed: { label: 'Confirmed', color: '#1565C0', bg: '#E3F2FD', emoji: '✅' },
+    picking: { label: 'Picking', color: '#E65100', bg: '#FFF3E0', emoji: '🛒' },
+    ready: { label: 'Ready', color: '#2E7D32', bg: '#E8F5E9', emoji: '📦' },
+    handed_over: { label: 'Completed', color: '#1B5E20', bg: '#C8E6C9', emoji: '🤝' },
+    cancelled: { label: 'Cancelled', color: '#C62828', bg: '#FFEBEE', emoji: '❌' },
 };
 
 export function OrderHistoryScreen() {
@@ -26,40 +26,49 @@ export function OrderHistoryScreen() {
     const renderOrder = ({ item }: { item: Order }) => {
         const config = statusConfig[item.status] || statusConfig.placed;
         return (
-            <TouchableOpacity onPress={() => navigation.navigate('OrderTracking', { orderId: item.id })}>
-                <Card style={styles.orderCard}>
-                    <Card.Content>
-                        <View style={styles.orderHeader}>
-                            <Text style={styles.orderNumber}>{item.order_number}</Text>
-                            <Chip
-                                style={[styles.statusChip, { backgroundColor: config.bg }]}
-                                textStyle={[styles.statusChipText, { color: config.color }]}
-                            >
-                                {config.label}
-                            </Chip>
-                        </View>
-                        <View style={styles.orderDetails}>
-                            <Text style={styles.orderItems}>
-                                {item.order_items?.length || 0} items
-                            </Text>
-                            <Text style={styles.orderTotal}>₹{item.total}</Text>
-                        </View>
-                        <Text style={styles.orderDate}>
-                            {new Date(item.created_at).toLocaleDateString('en-IN', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                            })}
-                        </Text>
-                        {item.customer_outside && item.status === 'ready' && (
-                            <View style={styles.outsideIndicator}>
-                                <Text style={styles.outsideIndicatorText}>📍 You're outside</Text>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('OrderTracking', { orderId: item.id })}
+                activeOpacity={0.7}
+            >
+                <View style={styles.orderCard}>
+                    <View style={styles.orderHeader}>
+                        <View style={styles.orderIdRow}>
+                            <View style={styles.orderEmojiCircle}>
+                                <Text style={styles.orderEmoji}>{config.emoji}</Text>
                             </View>
-                        )}
-                    </Card.Content>
-                </Card>
+                            <View>
+                                <Text style={styles.orderNumber}>{item.order_number}</Text>
+                                <Text style={styles.orderDate}>
+                                    {new Date(item.created_at).toLocaleDateString('en-IN', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    })}
+                                </Text>
+                            </View>
+                        </View>
+                        <Chip
+                            style={[styles.statusChip, { backgroundColor: config.bg }]}
+                            textStyle={[styles.statusChipText, { color: config.color }]}
+                        >
+                            {config.label}
+                        </Chip>
+                    </View>
+                    <View style={styles.orderDivider} />
+                    <View style={styles.orderFooter}>
+                        <Text style={styles.orderItems}>
+                            {item.order_items?.length || 0} items
+                        </Text>
+                        <Text style={styles.orderTotal}>₹{item.total}</Text>
+                    </View>
+                    {item.customer_outside && item.status === 'ready' && (
+                        <View style={styles.outsideIndicator}>
+                            <Text style={styles.outsideIndicatorText}>📍 You're outside</Text>
+                        </View>
+                    )}
+                </View>
             </TouchableOpacity>
         );
     };
@@ -75,7 +84,9 @@ export function OrderHistoryScreen() {
                 onRefresh={fetchOrders}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyEmoji}>📋</Text>
+                        <View style={styles.emptyCircle}>
+                            <Text style={styles.emptyEmoji}>📋</Text>
+                        </View>
                         <Text style={styles.emptyText}>No orders yet</Text>
                         <Text style={styles.emptySubtext}>Place your first order!</Text>
                     </View>
@@ -91,72 +102,105 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     listContent: {
-        padding: 16,
+        padding: spacing.md,
     },
     orderCard: {
-        marginBottom: 12,
-        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.md,
+        marginBottom: spacing.md,
+        ...shadows.sm,
     },
     orderHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: spacing.sm,
+    },
+    orderIdRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+    },
+    orderEmojiCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    orderEmoji: {
+        fontSize: 18,
     },
     orderNumber: {
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '800',
         color: theme.colors.primary,
+    },
+    orderDate: {
+        fontSize: 12,
+        color: theme.colors.outlineVariant,
+        marginTop: 1,
     },
     statusChip: {
         height: 28,
     },
     statusChipText: {
         fontSize: 11,
-        fontWeight: '600',
+        fontWeight: '700',
     },
-    orderDetails: {
+    orderDivider: {
+        height: 1,
+        backgroundColor: theme.colors.outline,
+        marginBottom: spacing.sm,
+    },
+    orderFooter: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 4,
+        alignItems: 'center',
     },
     orderItems: {
         fontSize: 14,
         color: theme.colors.outlineVariant,
     },
     orderTotal: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 16,
+        fontWeight: '800',
         color: theme.colors.onSurface,
-    },
-    orderDate: {
-        fontSize: 12,
-        color: theme.colors.outlineVariant,
     },
     outsideIndicator: {
         backgroundColor: theme.colors.secondaryContainer,
-        paddingHorizontal: 8,
+        paddingHorizontal: 12,
         paddingVertical: 4,
-        borderRadius: 8,
+        borderRadius: borderRadius.full,
         alignSelf: 'flex-start',
-        marginTop: 8,
+        marginTop: spacing.sm,
     },
     outsideIndicatorText: {
         fontSize: 12,
-        fontWeight: '600',
+        fontWeight: '700',
         color: theme.colors.secondary,
     },
     emptyContainer: {
         alignItems: 'center',
-        marginTop: 48,
+        marginTop: 64,
+    },
+    emptyCircle: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.lg,
     },
     emptyEmoji: {
-        fontSize: 48,
-        marginBottom: 12,
+        fontSize: 44,
     },
     emptyText: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 20,
+        fontWeight: '800',
         color: theme.colors.onSurface,
         marginBottom: 4,
     },

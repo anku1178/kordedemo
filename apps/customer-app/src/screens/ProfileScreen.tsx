@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Text, Button, TextInput, Divider } from 'react-native-paper';
 import { useAuthStore } from '../stores/authStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 
 export function ProfileScreen() {
     const { user, updateProfile, signOut } = useAuthStore();
@@ -16,23 +16,33 @@ export function ProfileScreen() {
     };
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             {/* Profile Header */}
-            <View style={styles.header}>
-                <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>
-                        {user?.full_name?.charAt(0)?.toUpperCase() || '?'}
-                    </Text>
+            <View style={styles.headerCard}>
+                <View style={styles.avatarOuter}>
+                    <View style={styles.avatar}>
+                        <Text style={styles.avatarText}>
+                            {user?.full_name?.charAt(0)?.toUpperCase() || '?'}
+                        </Text>
+                    </View>
                 </View>
                 <Text style={styles.name}>{user?.full_name || 'Customer'}</Text>
-                <Text style={styles.phone}>{user?.email || ''}</Text>
+                <Text style={styles.email}>{user?.email || ''}</Text>
+                <View style={styles.memberBadge}>
+                    <Text style={styles.memberBadgeText}>🛒 Member</Text>
+                </View>
             </View>
-
-            <Divider />
 
             {/* Profile Details */}
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Profile Details</Text>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Profile Details</Text>
+                    {!editing && (
+                        <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
+                            <Text style={styles.editButtonText}>✏️ Edit</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
 
                 {editing ? (
                     <View style={styles.editForm}>
@@ -42,6 +52,7 @@ export function ProfileScreen() {
                             onChangeText={setName}
                             mode="outlined"
                             style={styles.input}
+                            left={<TextInput.Icon icon="account" />}
                             outlineColor={theme.colors.outline}
                             activeOutlineColor={theme.colors.primary}
                         />
@@ -51,6 +62,7 @@ export function ProfileScreen() {
                             onChangeText={setPhone}
                             mode="outlined"
                             style={styles.input}
+                            left={<TextInput.Icon icon="phone" />}
                             keyboardType="phone-pad"
                             outlineColor={theme.colors.outline}
                             activeOutlineColor={theme.colors.primary}
@@ -63,7 +75,8 @@ export function ProfileScreen() {
                                     setName(user?.full_name || '');
                                     setPhone(user?.phone || '');
                                 }}
-                                style={styles.editButton}
+                                style={styles.actionButton}
+                                textColor={theme.colors.outlineVariant}
                             >
                                 Cancel
                             </Button>
@@ -71,39 +84,60 @@ export function ProfileScreen() {
                                 mode="contained"
                                 onPress={handleSave}
                                 buttonColor={theme.colors.primary}
-                                style={styles.editButton}
+                                style={styles.actionButton}
                             >
-                                Save
+                                Save Changes
                             </Button>
                         </View>
                     </View>
                 ) : (
-                    <TouchableOpacity onPress={() => setEditing(true)}>
+                    <View style={styles.detailsCard}>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Name</Text>
-                            <Text style={styles.detailValue}>{user?.full_name || 'Not set'}</Text>
+                            <View style={styles.detailIconCircle}>
+                                <Text style={styles.detailIcon}>👤</Text>
+                            </View>
+                            <View style={styles.detailContent}>
+                                <Text style={styles.detailLabel}>Name</Text>
+                                <Text style={styles.detailValue}>{user?.full_name || 'Not set'}</Text>
+                            </View>
                         </View>
+                        <View style={styles.detailDivider} />
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Email</Text>
-                            <Text style={styles.detailValue}>{user?.email || 'Not set'}</Text>
+                            <View style={styles.detailIconCircle}>
+                                <Text style={styles.detailIcon}>✉️</Text>
+                            </View>
+                            <View style={styles.detailContent}>
+                                <Text style={styles.detailLabel}>Email</Text>
+                                <Text style={styles.detailValue}>{user?.email || 'Not set'}</Text>
+                            </View>
                         </View>
+                        <View style={styles.detailDivider} />
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>Phone</Text>
-                            <Text style={styles.detailValue}>{user?.phone || 'Not set'}</Text>
+                            <View style={styles.detailIconCircle}>
+                                <Text style={styles.detailIcon}>📱</Text>
+                            </View>
+                            <View style={styles.detailContent}>
+                                <Text style={styles.detailLabel}>Phone</Text>
+                                <Text style={styles.detailValue}>{user?.phone || 'Not set'}</Text>
+                            </View>
                         </View>
-                        <Text style={styles.editHint}>Tap to edit</Text>
-                    </TouchableOpacity>
+                    </View>
                 )}
             </View>
-
-            <Divider />
 
             {/* App Info */}
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>About</Text>
-                <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>App Version</Text>
-                    <Text style={styles.detailValue}>1.0.0</Text>
+                <View style={styles.detailsCard}>
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailIconCircle}>
+                            <Text style={styles.detailIcon}>📱</Text>
+                        </View>
+                        <View style={styles.detailContent}>
+                            <Text style={styles.detailLabel}>App Version</Text>
+                            <Text style={styles.detailValue}>1.0.0</Text>
+                        </View>
+                    </View>
                 </View>
             </View>
 
@@ -113,6 +147,7 @@ export function ProfileScreen() {
                 onPress={signOut}
                 textColor={theme.colors.error}
                 style={styles.signOutButton}
+                contentStyle={styles.signOutContent}
             >
                 Sign Out
             </Button>
@@ -126,82 +161,145 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     content: {
-        padding: 16,
-        paddingBottom: 32,
+        padding: spacing.md,
+        paddingBottom: spacing.xxl,
     },
-    header: {
+    headerCard: {
         alignItems: 'center',
-        paddingVertical: 24,
+        backgroundColor: theme.colors.primary,
+        borderRadius: borderRadius.xl,
+        paddingVertical: spacing.xl,
+        paddingHorizontal: spacing.lg,
+        marginBottom: spacing.lg,
+        ...shadows.md,
+    },
+    avatarOuter: {
+        marginBottom: spacing.md,
     },
     avatar: {
-        width: 72,
-        height: 72,
-        borderRadius: 36,
-        backgroundColor: theme.colors.primaryContainer,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#FFFFFF',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 12,
+        ...shadows.md,
     },
     avatarText: {
-        fontSize: 28,
-        fontWeight: '700',
+        fontSize: 32,
+        fontWeight: '800',
         color: theme.colors.primary,
     },
     name: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: theme.colors.onSurface,
-        marginBottom: 4,
+        fontSize: 22,
+        fontWeight: '800',
+        color: '#FFFFFF',
+        marginBottom: 2,
     },
-    phone: {
+    email: {
         fontSize: 14,
-        color: theme.colors.outlineVariant,
+        color: 'rgba(255,255,255,0.8)',
+        marginBottom: spacing.sm,
+    },
+    memberBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        borderRadius: borderRadius.full,
+    },
+    memberBadgeText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#FFFFFF',
     },
     section: {
-        paddingVertical: 16,
+        marginBottom: spacing.lg,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: spacing.sm,
     },
     sectionTitle: {
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '800',
         color: theme.colors.onSurface,
-        marginBottom: 12,
+    },
+    editButton: {
+        backgroundColor: theme.colors.primaryContainer,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: borderRadius.full,
+    },
+    editButtonText: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: theme.colors.primary,
+    },
+    detailsCard: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.md,
+        ...shadows.sm,
     },
     detailRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
+        alignItems: 'center',
+        paddingVertical: spacing.sm,
+        gap: spacing.md,
+    },
+    detailIconCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: theme.colors.surfaceVariant,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    detailIcon: {
+        fontSize: 18,
+    },
+    detailContent: {
+        flex: 1,
     },
     detailLabel: {
-        fontSize: 14,
+        fontSize: 12,
         color: theme.colors.outlineVariant,
+        marginBottom: 1,
     },
     detailValue: {
-        fontSize: 14,
+        fontSize: 15,
         color: theme.colors.onSurface,
-        fontWeight: '500',
+        fontWeight: '600',
     },
-    editHint: {
-        fontSize: 12,
-        color: theme.colors.primary,
-        marginTop: 4,
+    detailDivider: {
+        height: 1,
+        backgroundColor: theme.colors.outline,
+        marginLeft: 56,
     },
     editForm: {
-        gap: 12,
+        gap: spacing.sm,
     },
     input: {
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.surfaceVariant,
+        borderRadius: borderRadius.md,
     },
     editActions: {
         flexDirection: 'row',
-        gap: 12,
+        gap: spacing.sm,
+        marginTop: spacing.sm,
     },
-    editButton: {
+    actionButton: {
         flex: 1,
-        borderRadius: 8,
+        borderRadius: borderRadius.md,
     },
     signOutButton: {
-        marginTop: 24,
+        marginTop: spacing.sm,
         borderColor: theme.colors.error,
-        borderRadius: 8,
+        borderRadius: borderRadius.lg,
+    },
+    signOutContent: {
+        paddingVertical: 4,
     },
 });

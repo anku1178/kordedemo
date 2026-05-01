@@ -4,7 +4,7 @@ import { Text, Button, Chip } from 'react-native-paper';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { supabase } from '../services/supabase';
 import { useCartStore } from '../stores/cartStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 import type { Product } from 'shared-types';
 
 export function ProductScreen() {
@@ -13,6 +13,7 @@ export function ProductScreen() {
     const { productId } = route.params;
     const [product, setProduct] = useState<Product | null>(null);
     const [quantity, setQuantity] = useState(1);
+    const [added, setAdded] = useState(false);
     const addItem = useCartStore((state) => state.addItem);
 
     useEffect(() => {
@@ -33,53 +34,77 @@ export function ProductScreen() {
 
     const handleAddToCart = () => {
         addItem(product, quantity);
-        navigation.navigate('Cart');
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
     };
+
+    const inStock = product.is_available && product.stock_quantity > 0;
 
     return (
         <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Product Image Placeholder */}
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                {/* Product Image Area */}
                 <View style={styles.imageContainer}>
                     {product.image_url ? (
-                        <Text>Image</Text>
+                        <View style={styles.imagePlaceholder}>
+                            <Text style={styles.imagePlaceholderText}>🥬</Text>
+                        </View>
                     ) : (
                         <View style={styles.imagePlaceholder}>
-                            <Text style={styles.imagePlaceholderText}>🛒</Text>
+                            <Text style={styles.imagePlaceholderText}>
+                                {getProductEmoji(product.category?.slug || '')}
+                            </Text>
+                        </View>
+                    )}
+                    {product.category && (
+                        <View style={styles.categoryBadge}>
+                            <Text style={styles.categoryBadgeText}>{product.category.name}</Text>
                         </View>
                     )}
                 </View>
 
-                {/* Product Info */}
-                <View style={styles.infoContainer}>
-                    <Text style={styles.productName}>{product.name}</Text>
-
-                    {product.category && (
-                        <Chip style={styles.categoryChip} textStyle={styles.categoryChipText}>
-                            {product.category.name}
-                        </Chip>
-                    )}
-
-                    <View style={styles.priceContainer}>
-                        <Text style={styles.price}>₹{product.price}</Text>
+                {/* Product Info Card */}
+                <View style={styles.infoCard}>
+                    <View style={styles.nameRow}>
+                        <Text style={styles.productName}>{product.name}</Text>
+                        <View style={[styles.stockBadge, inStock ? styles.stockBadgeIn : styles.stockBadgeOut]}>
+                            <Text style={[styles.stockBadgeText, inStock ? styles.stockBadgeTextIn : styles.stockBadgeTextOut]}>
+                                {inStock ? '✓ In Stock' : '✕ Out'}
+                            </Text>
+                        </View>
                     </View>
 
-                    <Text style={styles.unit}>Unit: {product.unit}</Text>
+                    <Text style={styles.unitText}>{product.unit}</Text>
+
+                    <View style={styles.priceRow}>
+                        <Text style={styles.price}>₹{product.price}</Text>
+                        <Text style={styles.perUnit}>per {product.unit}</Text>
+                    </View>
 
                     {product.description && (
-                        <View style={styles.descriptionContainer}>
-                            <Text style={styles.descriptionLabel}>Description</Text>
+                        <View style={styles.descriptionSection}>
+                            <Text style={styles.descriptionLabel}>About this product</Text>
                             <Text style={styles.description}>{product.description}</Text>
                         </View>
                     )}
+                </View>
 
-                    <View style={styles.stockInfo}>
-                        <Text style={[
-                            styles.stockText,
-                            { color: product.is_available ? theme.colors.primary : theme.colors.error }
-                        ]}>
-                            {product.is_available ? '✓ In Stock' : '✕ Out of Stock'}
-                        </Text>
+                {/* Quick Info Cards */}
+                <View style={styles.quickInfoRow}>
+                    <View style={styles.quickInfoCard}>
+                        <Text style={styles.quickInfoEmoji}>🏪</Text>
+                        <Text style={styles.quickInfoLabel}>Pickup</Text>
+                        <Text style={styles.quickInfoValue}>In Store</Text>
+                    </View>
+                    <View style={styles.quickInfoCard}>
+                        <Text style={styles.quickInfoEmoji}>💵</Text>
+                        <Text style={styles.quickInfoLabel}>Payment</Text>
+                        <Text style={styles.quickInfoValue}>At Counter</Text>
+                    </View>
+                    <View style={styles.quickInfoCard}>
+                        <Text style={styles.quickInfoEmoji}>📦</Text>
+                        <Text style={styles.quickInfoLabel}>Stock</Text>
+                        <Text style={styles.quickInfoValue}>{product.stock_quantity} left</Text>
                     </View>
                 </View>
             </ScrollView>
@@ -90,6 +115,7 @@ export function ProductScreen() {
                     <TouchableOpacity
                         style={styles.quantityButton}
                         onPress={() => setQuantity(Math.max(1, quantity - 1))}
+                        activeOpacity={0.7}
                     >
                         <Text style={styles.quantityButtonText}>−</Text>
                     </TouchableOpacity>
@@ -97,6 +123,7 @@ export function ProductScreen() {
                     <TouchableOpacity
                         style={styles.quantityButton}
                         onPress={() => setQuantity(quantity + 1)}
+                        activeOpacity={0.7}
                     >
                         <Text style={styles.quantityButtonText}>+</Text>
                     </TouchableOpacity>
@@ -105,14 +132,26 @@ export function ProductScreen() {
                     mode="contained"
                     onPress={handleAddToCart}
                     style={styles.addToCartButton}
-                    buttonColor={theme.colors.primary}
+                    buttonColor={added ? '#4CAF50' : theme.colors.primary}
                     disabled={!product.is_available}
+                    contentStyle={styles.addToCartContent}
+                    labelStyle={styles.addToCartLabel}
                 >
-                    ADD TO CART • ₹{(product.price * quantity).toFixed(2)}
+                    {added ? '✓ ADDED' : `ADD • ₹${(product.price * quantity).toFixed(2)}`}
                 </Button>
             </View>
         </View>
     );
+}
+
+function getProductEmoji(slug: string): string {
+    const map: Record<string, string> = {
+        vegetables: '🥬', fruits: '🍎', dairy: '🥛', snacks: '🍿',
+        beverages: '🥤', staples: '🍚', spices: '🌶️', personal_care: '🧴',
+        household: '🧹', bakery: '🍞', frozen: '🧊', baby_care: '👶',
+        meat: '🥩', pulses: '🫘', oil: '🫒',
+    };
+    return map[slug] || '🛒';
 }
 
 const styles = StyleSheet.create({
@@ -124,76 +163,145 @@ const styles = StyleSheet.create({
         paddingBottom: 100,
     },
     imageContainer: {
-        height: 250,
-        backgroundColor: theme.colors.surface,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    imagePlaceholder: {
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        height: 280,
         backgroundColor: theme.colors.primaryContainer,
         justifyContent: 'center',
         alignItems: 'center',
+        position: 'relative',
+    },
+    imagePlaceholder: {
+        width: 140,
+        height: 140,
+        borderRadius: 70,
+        backgroundColor: '#FFFFFF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...shadows.md,
     },
     imagePlaceholderText: {
-        fontSize: 48,
+        fontSize: 60,
     },
-    infoContainer: {
-        padding: 16,
+    categoryBadge: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        backgroundColor: theme.colors.secondaryContainer,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        borderRadius: borderRadius.full,
+        ...shadows.sm,
+    },
+    categoryBadgeText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: theme.colors.secondary,
+    },
+    infoCard: {
+        marginTop: -20,
+        marginHorizontal: spacing.md,
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.xl,
+        padding: spacing.lg,
+        ...shadows.lg,
+    },
+    nameRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 4,
     },
     productName: {
-        fontSize: 20,
-        fontWeight: '700',
+        fontSize: 22,
+        fontWeight: '800',
         color: theme.colors.onSurface,
-        marginBottom: 8,
+        flex: 1,
+        marginRight: 8,
     },
-    categoryChip: {
-        alignSelf: 'flex-start',
-        marginBottom: 12,
-        backgroundColor: theme.colors.secondaryContainer,
+    stockBadge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: borderRadius.full,
     },
-    categoryChipText: {
-        fontSize: 12,
+    stockBadgeIn: {
+        backgroundColor: '#E8F5E9',
     },
-    priceContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        marginBottom: 8,
+    stockBadgeOut: {
+        backgroundColor: '#FFEBEE',
     },
-    price: {
-        fontSize: 24,
+    stockBadgeText: {
+        fontSize: 11,
         fontWeight: '700',
-        color: theme.colors.primary,
     },
-    unit: {
+    stockBadgeTextIn: {
+        color: '#2E7D32',
+    },
+    stockBadgeTextOut: {
+        color: '#D32F2F',
+    },
+    unitText: {
         fontSize: 14,
         color: theme.colors.outlineVariant,
-        marginBottom: 16,
+        marginBottom: 12,
     },
-    descriptionContainer: {
-        marginTop: 8,
-        marginBottom: 16,
+    priceRow: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: 6,
+        marginBottom: 4,
+    },
+    price: {
+        fontSize: 28,
+        fontWeight: '800',
+        color: theme.colors.primary,
+    },
+    perUnit: {
+        fontSize: 14,
+        color: theme.colors.outlineVariant,
+    },
+    descriptionSection: {
+        marginTop: spacing.md,
+        paddingTop: spacing.md,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.outline,
     },
     descriptionLabel: {
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
         color: theme.colors.onSurface,
-        marginBottom: 4,
+        marginBottom: 6,
     },
     description: {
         fontSize: 14,
         color: theme.colors.outlineVariant,
-        lineHeight: 20,
+        lineHeight: 22,
     },
-    stockInfo: {
-        marginTop: 8,
+    quickInfoRow: {
+        flexDirection: 'row',
+        marginHorizontal: spacing.md,
+        marginTop: spacing.md,
+        gap: spacing.sm,
     },
-    stockText: {
-        fontSize: 14,
-        fontWeight: '600',
+    quickInfoCard: {
+        flex: 1,
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.md,
+        alignItems: 'center',
+        ...shadows.sm,
+    },
+    quickInfoEmoji: {
+        fontSize: 24,
+        marginBottom: 4,
+    },
+    quickInfoLabel: {
+        fontSize: 11,
+        color: theme.colors.outlineVariant,
+        fontWeight: '500',
+    },
+    quickInfoValue: {
+        fontSize: 13,
+        color: theme.colors.onSurface,
+        fontWeight: '700',
     },
     bottomBar: {
         position: 'absolute',
@@ -202,41 +310,52 @@ const styles = StyleSheet.create({
         right: 0,
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 16,
+        padding: spacing.md,
         backgroundColor: theme.colors.surface,
         borderTopWidth: 1,
         borderTopColor: theme.colors.outline,
-        gap: 12,
+        gap: spacing.md,
+        ...shadows.md,
     },
     quantityContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
-        borderWidth: 1,
-        borderColor: theme.colors.outline,
-        borderRadius: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: borderRadius.lg,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
     },
     quantityButton: {
-        width: 32,
-        height: 32,
+        width: 36,
+        height: 36,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 18,
+        backgroundColor: '#FFFFFF',
+        ...shadows.sm,
     },
     quantityButtonText: {
         fontSize: 20,
-        fontWeight: '600',
+        fontWeight: '700',
         color: theme.colors.primary,
     },
     quantityText: {
-        fontSize: 16,
-        fontWeight: '600',
-        minWidth: 24,
+        fontSize: 18,
+        fontWeight: '700',
+        minWidth: 32,
         textAlign: 'center',
+        color: theme.colors.primary,
     },
     addToCartButton: {
         flex: 1,
-        paddingVertical: 6,
+        borderRadius: borderRadius.lg,
+    },
+    addToCartContent: {
+        paddingVertical: 8,
+    },
+    addToCartLabel: {
+        fontSize: 15,
+        fontWeight: '800',
+        letterSpacing: 0.5,
     },
 });

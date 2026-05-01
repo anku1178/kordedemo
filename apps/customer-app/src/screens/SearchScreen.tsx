@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { Text, Card, Searchbar } from 'react-native-paper';
+import { Text, Searchbar } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../services/supabase';
 import { useCartStore } from '../stores/cartStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 import type { Product } from 'shared-types';
 
 export function SearchScreen() {
+    const navigation = useNavigation<any>();
     const [query, setQuery] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
     const [searched, setSearched] = useState(false);
@@ -32,40 +34,48 @@ export function SearchScreen() {
     }, []);
 
     const renderProduct = ({ item }: { item: Product }) => (
-        <Card style={styles.productCard}>
-            <Card.Content style={styles.productContent}>
-                <View style={styles.productInfo}>
-                    <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-                    <Text style={styles.productUnit}>{item.unit}</Text>
-                    <View style={styles.priceRow}>
-                        <Text style={styles.productPrice}>₹{item.price}</Text>
-                    </View>
-                    <View style={styles.stockRow}>
-                        <View style={[styles.stockDot, { backgroundColor: item.is_available ? '#22c55e' : '#ef4444' }]} />
-                        <Text style={[styles.stockText, { color: item.is_available ? '#16a34a' : '#dc2626' }]}>
-                            {item.is_available ? 'In Stock' : 'Out of Stock'}
-                        </Text>
-                    </View>
-                </View>
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => addItem(item)}
-                >
-                    <Text style={styles.addButtonText}>ADD</Text>
-                </TouchableOpacity>
-            </Card.Content>
-        </Card>
+        <TouchableOpacity
+            style={styles.productCard}
+            onPress={() => navigation.navigate('Product', { productId: item.id })}
+            activeOpacity={0.7}
+        >
+            <View style={styles.productEmojiCircle}>
+                <Text style={styles.productEmoji}>🛍️</Text>
+            </View>
+            <View style={styles.productInfo}>
+                <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+                <Text style={styles.productUnit}>{item.unit}</Text>
+                <Text style={styles.productPrice}>₹{item.price}</Text>
+            </View>
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => addItem(item)}
+                activeOpacity={0.7}
+            >
+                <Text style={styles.addButtonText}>+ ADD</Text>
+            </TouchableOpacity>
+        </TouchableOpacity>
     );
 
     return (
         <View style={styles.container}>
-            <Searchbar
-                placeholder="Search for groceries..."
-                onChangeText={handleSearch}
-                value={query}
-                style={styles.searchBar}
-                autoFocus
-            />
+            <View style={styles.searchContainer}>
+                <Searchbar
+                    placeholder="Search for groceries..."
+                    onChangeText={handleSearch}
+                    value={query}
+                    style={styles.searchBar}
+                    autoFocus
+                    elevation={2}
+                />
+            </View>
+
+            {searched && products.length > 0 && (
+                <View style={styles.resultsHeader}>
+                    <Text style={styles.resultsCount}>{products.length} results</Text>
+                </View>
+            )}
+
             <FlatList
                 data={products}
                 renderItem={renderProduct}
@@ -74,13 +84,19 @@ export function SearchScreen() {
                 ListEmptyComponent={
                     searched ? (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyEmoji}>🔍</Text>
-                            <Text style={styles.emptyText}>No products found for "{query}"</Text>
+                            <View style={styles.emptyCircle}>
+                                <Text style={styles.emptyEmoji}>🔍</Text>
+                            </View>
+                            <Text style={styles.emptyTitle}>No products found</Text>
+                            <Text style={styles.emptySubtext}>Try searching for "{query}" differently</Text>
                         </View>
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyEmoji}>🛒</Text>
-                            <Text style={styles.emptyText}>Search for groceries, snacks, dairy...</Text>
+                            <View style={styles.emptyCircle}>
+                                <Text style={styles.emptyEmoji}>🛒</Text>
+                            </View>
+                            <Text style={styles.emptyTitle}>Search for groceries</Text>
+                            <Text style={styles.emptySubtext}>Vegetables, fruits, dairy, snacks...</Text>
                         </View>
                     )
                 }
@@ -94,90 +110,109 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: theme.colors.background,
     },
+    searchContainer: {
+        backgroundColor: theme.colors.primary,
+        paddingHorizontal: spacing.md,
+        paddingTop: spacing.sm,
+        paddingBottom: spacing.lg,
+        borderBottomLeftRadius: borderRadius.xl,
+        borderBottomRightRadius: borderRadius.xl,
+    },
     searchBar: {
-        margin: 16,
-        borderRadius: 12,
+        borderRadius: borderRadius.lg,
         backgroundColor: theme.colors.surface,
     },
+    resultsHeader: {
+        paddingHorizontal: spacing.md,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.xs,
+    },
+    resultsCount: {
+        fontSize: 13,
+        color: theme.colors.outlineVariant,
+        fontWeight: '600',
+    },
     listContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 16,
+        paddingHorizontal: spacing.md,
+        paddingBottom: spacing.xl,
     },
     productCard: {
-        marginBottom: 8,
-        borderRadius: 12,
-    },
-    productContent: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.lg,
+        padding: spacing.md,
+        marginBottom: spacing.sm,
+        gap: spacing.md,
+        ...shadows.sm,
+    },
+    productEmojiCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    productEmoji: {
+        fontSize: 22,
     },
     productInfo: {
         flex: 1,
     },
     productName: {
-        fontSize: 14,
-        fontWeight: '500',
+        fontSize: 15,
+        fontWeight: '700',
         color: theme.colors.onSurface,
-        marginBottom: 2,
+        marginBottom: 1,
     },
     productUnit: {
         fontSize: 12,
         color: theme.colors.outlineVariant,
-        marginBottom: 4,
-    },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+        marginBottom: 2,
     },
     productPrice: {
         fontSize: 16,
-        fontWeight: '700',
+        fontWeight: '800',
         color: theme.colors.primary,
-    },
-    productMrp: {
-        fontSize: 12,
-        color: theme.colors.outlineVariant,
-        textDecorationLine: 'line-through',
     },
     addButton: {
-        backgroundColor: theme.colors.primaryContainer,
-        paddingHorizontal: 16,
+        backgroundColor: theme.colors.primary,
+        paddingHorizontal: 14,
         paddingVertical: 8,
-        borderRadius: 8,
+        borderRadius: borderRadius.full,
     },
     addButtonText: {
-        color: theme.colors.primary,
-        fontWeight: '700',
+        color: '#FFFFFF',
+        fontWeight: '800',
         fontSize: 12,
-    },
-    stockRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        marginTop: 4,
-    },
-    stockDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-    },
-    stockText: {
-        fontSize: 10,
-        fontWeight: '600',
+        letterSpacing: 0.5,
     },
     emptyContainer: {
         alignItems: 'center',
-        marginTop: 48,
+        marginTop: 64,
+    },
+    emptyCircle: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.lg,
     },
     emptyEmoji: {
-        fontSize: 48,
-        marginBottom: 12,
+        fontSize: 44,
     },
-    emptyText: {
-        color: theme.colors.outlineVariant,
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: theme.colors.onSurface,
+        marginBottom: 4,
+    },
+    emptySubtext: {
         fontSize: 14,
+        color: theme.colors.outlineVariant,
         textAlign: 'center',
     },
 });

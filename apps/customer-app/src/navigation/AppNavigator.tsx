@@ -46,11 +46,22 @@ function HomeTabs() {
                 tabBarActiveTintColor: theme.colors.primary,
                 tabBarInactiveTintColor: theme.colors.outlineVariant,
                 tabBarStyle: {
-                    paddingBottom: 4,
-                    height: 60,
+                    paddingBottom: 8,
+                    paddingTop: 4,
+                    height: 64,
+                    backgroundColor: theme.colors.surface,
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    borderTopWidth: 0,
+                    elevation: 12,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: -2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
                 },
                 tabBarLabelStyle: {
-                    fontSize: 12,
+                    fontSize: 11,
+                    fontWeight: '600',
                 },
             }}
         >

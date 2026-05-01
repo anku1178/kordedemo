@@ -3,41 +3,46 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-nativ
 import { Text, Button, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useCartStore } from '../stores/cartStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 
 export function CartScreen() {
     const navigation = useNavigation<any>();
     const { items, removeItem, updateQuantity, getSubtotal, getTotal, getItemCount } = useCartStore();
 
-    const renderItem = ({ item }: { item: ReturnType<typeof useCartStore.getState>['items'][0] }) => (
+    const renderItem = ({ item, index }: { item: ReturnType<typeof useCartStore.getState>['items'][0]; index: number }) => (
         <View style={styles.cartItem}>
+            <View style={styles.itemEmojiCircle}>
+                <Text style={styles.itemEmoji}>🛍️</Text>
+            </View>
             <View style={styles.itemInfo}>
                 <Text style={styles.itemName} numberOfLines={2}>{item.product.name}</Text>
                 <Text style={styles.itemUnit}>{item.product.unit}</Text>
-                <View style={styles.itemPriceRow}>
-                    <Text style={styles.itemPrice}>₹{item.product.price}</Text>
+                <Text style={styles.itemPrice}>₹{item.product.price} each</Text>
+            </View>
+            <View style={styles.itemRight}>
+                <View style={styles.quantityContainer}>
+                    <TouchableOpacity
+                        style={styles.quantityButton}
+                        onPress={() => updateQuantity(item.product.id, item.quantity - 1)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.quantityButtonText}>−</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.quantityText}>{item.quantity}</Text>
+                    <TouchableOpacity
+                        style={styles.quantityButton}
+                        onPress={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.quantityButtonText}>+</Text>
+                    </TouchableOpacity>
                 </View>
-            </View>
-            <View style={styles.quantityContainer}>
-                <TouchableOpacity
-                    style={styles.quantityButton}
-                    onPress={() => updateQuantity(item.product.id, item.quantity - 1)}
-                >
-                    <Text style={styles.quantityButtonText}>−</Text>
-                </TouchableOpacity>
-                <Text style={styles.quantityText}>{item.quantity}</Text>
-                <TouchableOpacity
-                    style={styles.quantityButton}
-                    onPress={() => updateQuantity(item.product.id, item.quantity + 1)}
-                >
-                    <Text style={styles.quantityButtonText}>+</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.itemTotal}>
-                <Text style={styles.itemTotalText}>₹{(item.product.price * item.quantity).toFixed(2)}</Text>
-                <TouchableOpacity onPress={() => removeItem(item.product.id)}>
-                    <Text style={styles.removeText}>Remove</Text>
-                </TouchableOpacity>
+                <View style={styles.itemTotalRow}>
+                    <Text style={styles.itemTotalText}>₹{(item.product.price * item.quantity).toFixed(2)}</Text>
+                    <TouchableOpacity onPress={() => removeItem(item.product.id)}>
+                        <Text style={styles.removeText}>✕</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
@@ -45,14 +50,18 @@ export function CartScreen() {
     if (items.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Text style={styles.emptyEmoji}>🛒</Text>
+                <View style={styles.emptyCircle}>
+                    <Text style={styles.emptyEmoji}>🛒</Text>
+                </View>
                 <Text style={styles.emptyTitle}>Your cart is empty</Text>
-                <Text style={styles.emptySubtitle}>Add some groceries to get started!</Text>
+                <Text style={styles.emptySubtitle}>Add some fresh groceries to get started!</Text>
                 <Button
                     mode="contained"
                     onPress={() => navigation.navigate('Home')}
                     buttonColor={theme.colors.primary}
                     style={styles.shopButton}
+                    contentStyle={styles.shopButtonContent}
+                    labelStyle={styles.shopButtonLabel}
                 >
                     Browse Products
                 </Button>
@@ -66,7 +75,7 @@ export function CartScreen() {
                 data={items}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.product.id}
-                ItemSeparatorComponent={() => <Divider />}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
                 contentContainerStyle={styles.listContent}
             />
 
@@ -76,7 +85,7 @@ export function CartScreen() {
                     <Text style={styles.summaryLabel}>Items ({getItemCount()})</Text>
                     <Text style={styles.summaryValue}>₹{getSubtotal().toFixed(2)}</Text>
                 </View>
-                <Divider style={styles.divider} />
+                <View style={styles.summaryDivider} />
                 <View style={styles.summaryRow}>
                     <Text style={styles.totalLabel}>Total</Text>
                     <Text style={styles.totalValue}>₹{getTotal().toFixed(2)}</Text>
@@ -87,6 +96,7 @@ export function CartScreen() {
                     buttonColor={theme.colors.primary}
                     style={styles.checkoutButton}
                     contentStyle={styles.checkoutButtonContent}
+                    labelStyle={styles.checkoutButtonLabel}
                 >
                     PROCEED TO CHECKOUT • ₹{getTotal().toFixed(2)}
                 </Button>
@@ -101,51 +111,60 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     listContent: {
-        paddingHorizontal: 16,
-        paddingTop: 8,
+        paddingHorizontal: spacing.md,
+        paddingTop: spacing.sm,
+        paddingBottom: 180,
+    },
+    separator: {
+        height: 1,
+        backgroundColor: theme.colors.outline,
+        marginVertical: 2,
     },
     cartItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        gap: 12,
+        paddingVertical: spacing.md,
+        gap: spacing.md,
+    },
+    itemEmojiCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    itemEmoji: {
+        fontSize: 22,
     },
     itemInfo: {
         flex: 1,
     },
     itemName: {
-        fontSize: 14,
-        fontWeight: '500',
+        fontSize: 15,
+        fontWeight: '600',
         color: theme.colors.onSurface,
         marginBottom: 2,
     },
     itemUnit: {
         fontSize: 12,
         color: theme.colors.outlineVariant,
-        marginBottom: 4,
-    },
-    itemPriceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
+        marginBottom: 2,
     },
     itemPrice: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 13,
         color: theme.colors.primary,
+        fontWeight: '600',
     },
-    itemMrp: {
-        fontSize: 11,
-        color: theme.colors.outlineVariant,
-        textDecorationLine: 'line-through',
+    itemRight: {
+        alignItems: 'flex-end',
+        gap: 8,
     },
     quantityContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        borderWidth: 1,
-        borderColor: theme.colors.outline,
-        borderRadius: 8,
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: borderRadius.lg,
         paddingHorizontal: 4,
         paddingVertical: 2,
     },
@@ -154,37 +173,51 @@ const styles = StyleSheet.create({
         height: 28,
         justifyContent: 'center',
         alignItems: 'center',
+        borderRadius: 14,
+        backgroundColor: '#FFFFFF',
+        ...shadows.sm,
     },
     quantityButtonText: {
-        fontSize: 18,
-        fontWeight: '600',
+        fontSize: 16,
+        fontWeight: '700',
         color: theme.colors.primary,
     },
     quantityText: {
-        fontSize: 14,
-        fontWeight: '600',
-        minWidth: 20,
+        fontSize: 15,
+        fontWeight: '700',
+        minWidth: 24,
         textAlign: 'center',
+        color: theme.colors.primary,
     },
-    itemTotal: {
-        alignItems: 'flex-end',
-        minWidth: 70,
+    itemTotalRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
     },
     itemTotalText: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 15,
+        fontWeight: '700',
         color: theme.colors.onSurface,
-        marginBottom: 4,
     },
     removeText: {
-        fontSize: 12,
-        color: theme.colors.error,
+        fontSize: 14,
+        color: theme.colors.outlineVariant,
+        fontWeight: '600',
+        width: 24,
+        height: 24,
+        textAlign: 'center',
+        lineHeight: 24,
     },
     summary: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
         backgroundColor: theme.colors.surface,
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.outline,
-        padding: 16,
+        borderTopLeftRadius: borderRadius.xl,
+        borderTopRightRadius: borderRadius.xl,
+        padding: spacing.lg,
+        ...shadows.lg,
     },
     summaryRow: {
         flexDirection: 'row',
@@ -198,50 +231,75 @@ const styles = StyleSheet.create({
     summaryValue: {
         fontSize: 14,
         color: theme.colors.onSurface,
+        fontWeight: '500',
     },
-    divider: {
+    summaryDivider: {
+        height: 1,
+        backgroundColor: theme.colors.outline,
         marginVertical: 8,
     },
     totalLabel: {
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 18,
+        fontWeight: '800',
         color: theme.colors.onSurface,
     },
     totalValue: {
-        fontSize: 16,
-        fontWeight: '700',
+        fontSize: 18,
+        fontWeight: '800',
         color: theme.colors.primary,
     },
     checkoutButton: {
-        marginTop: 12,
-        borderRadius: 12,
+        marginTop: spacing.md,
+        borderRadius: borderRadius.lg,
     },
     checkoutButtonContent: {
-        paddingVertical: 6,
+        paddingVertical: 8,
+    },
+    checkoutButtonLabel: {
+        fontSize: 15,
+        fontWeight: '800',
+        letterSpacing: 0.3,
     },
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 24,
+        padding: spacing.xl,
+        backgroundColor: theme.colors.background,
+    },
+    emptyCircle: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.lg,
     },
     emptyEmoji: {
-        fontSize: 64,
-        marginBottom: 16,
+        fontSize: 52,
     },
     emptyTitle: {
-        fontSize: 20,
-        fontWeight: '700',
+        fontSize: 22,
+        fontWeight: '800',
         color: theme.colors.onSurface,
         marginBottom: 8,
     },
     emptySubtitle: {
         fontSize: 14,
         color: theme.colors.outlineVariant,
-        marginBottom: 24,
+        marginBottom: spacing.xl,
+        textAlign: 'center',
     },
     shopButton: {
-        borderRadius: 12,
-        paddingHorizontal: 24,
+        borderRadius: borderRadius.lg,
+        paddingHorizontal: spacing.xl,
+    },
+    shopButtonContent: {
+        paddingVertical: 8,
+    },
+    shopButtonLabel: {
+        fontSize: 15,
+        fontWeight: '700',
     },
 });

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { Text, Card } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
+import { Text } from 'react-native-paper';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { supabase } from '../services/supabase';
 import { useCartStore } from '../stores/cartStore';
-import { theme } from '../theme';
+import { theme, shadows, spacing, borderRadius } from '../theme';
 import type { Product } from 'shared-types';
 
 export function CategoryScreen() {
     const route = useRoute<any>();
+    const navigation = useNavigation<any>();
     const { categoryId, categoryName } = route.params;
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,29 +33,29 @@ export function CategoryScreen() {
     };
 
     const renderProduct = ({ item }: { item: Product }) => (
-        <Card style={styles.productCard}>
-            <Card.Content>
+        <TouchableOpacity
+            style={styles.productCard}
+            onPress={() => navigation.navigate('Product', { productId: item.id })}
+            activeOpacity={0.7}
+        >
+            <View style={styles.productImageArea}>
+                <Text style={styles.productEmoji}>🛍️</Text>
+            </View>
+            <View style={styles.productInfo}>
                 <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
                 <Text style={styles.productUnit}>{item.unit}</Text>
-                <View style={styles.priceRow}>
+                <View style={styles.productBottom}>
                     <Text style={styles.productPrice}>₹{item.price}</Text>
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => addItem(item)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.addButtonText}>+ ADD</Text>
+                    </TouchableOpacity>
                 </View>
-                <View style={styles.stockRow}>
-                    <View style={[styles.stockDot, { backgroundColor: item.is_available ? '#22c55e' : '#ef4444' }]} />
-                    <Text style={[styles.stockText, { color: item.is_available ? '#16a34a' : '#dc2626' }]}>
-                        {item.is_available ? 'In Stock' : 'Out of Stock'}
-                    </Text>
-                </View>
-            </Card.Content>
-            <Card.Actions>
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => addItem(item)}
-                >
-                    <Text style={styles.addButtonText}>ADD</Text>
-                </TouchableOpacity>
-            </Card.Actions>
-        </Card>
+            </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -66,9 +67,15 @@ export function CategoryScreen() {
                 numColumns={2}
                 columnWrapperStyle={styles.productRow}
                 contentContainerStyle={styles.listContent}
+                refreshing={loading}
+                onRefresh={loadProducts}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No products found in this category</Text>
+                        <View style={styles.emptyCircle}>
+                            <Text style={styles.emptyEmoji}>🔍</Text>
+                        </View>
+                        <Text style={styles.emptyText}>No products found</Text>
+                        <Text style={styles.emptySubtext}>in this category</Text>
                     </View>
                 }
             />
@@ -82,75 +89,88 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     listContent: {
-        padding: 12,
+        padding: spacing.sm,
+        paddingBottom: spacing.xl,
     },
     productRow: {
-        gap: 8,
+        gap: spacing.sm,
     },
     productCard: {
         flex: 1,
-        marginHorizontal: 4,
-        marginBottom: 8,
-        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        borderRadius: borderRadius.lg,
+        marginBottom: spacing.sm,
+        overflow: 'hidden',
+        ...shadows.sm,
+    },
+    productImageArea: {
+        height: 100,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    productEmoji: {
+        fontSize: 36,
+    },
+    productInfo: {
+        padding: spacing.sm + 2,
     },
     productName: {
         fontSize: 13,
-        fontWeight: '500',
-        marginBottom: 2,
+        fontWeight: '700',
         color: theme.colors.onSurface,
+        marginBottom: 2,
     },
     productUnit: {
         fontSize: 11,
         color: theme.colors.outlineVariant,
-        marginBottom: 4,
+        marginBottom: spacing.sm,
     },
-    priceRow: {
+    productBottom: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 6,
     },
     productPrice: {
-        fontSize: 15,
-        fontWeight: '700',
+        fontSize: 16,
+        fontWeight: '800',
         color: theme.colors.primary,
-    },
-    productMrp: {
-        fontSize: 12,
-        color: theme.colors.outlineVariant,
-        textDecorationLine: 'line-through',
     },
     addButton: {
-        backgroundColor: theme.colors.primaryContainer,
-        paddingHorizontal: 16,
-        paddingVertical: 6,
-        borderRadius: 8,
+        backgroundColor: theme.colors.primary,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        borderRadius: borderRadius.full,
     },
     addButtonText: {
-        color: theme.colors.primary,
-        fontWeight: '700',
-        fontSize: 12,
-    },
-    stockRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        marginTop: 4,
-    },
-    stockDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-    },
-    stockText: {
-        fontSize: 10,
-        fontWeight: '600',
+        color: '#FFFFFF',
+        fontWeight: '800',
+        fontSize: 11,
+        letterSpacing: 0.5,
     },
     emptyContainer: {
         alignItems: 'center',
-        marginTop: 48,
+        marginTop: 64,
+    },
+    emptyCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: theme.colors.primaryContainer,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: spacing.md,
+    },
+    emptyEmoji: {
+        fontSize: 36,
     },
     emptyText: {
-        color: theme.colors.outlineVariant,
+        fontSize: 18,
+        fontWeight: '700',
+        color: theme.colors.onSurface,
+    },
+    emptySubtext: {
         fontSize: 14,
+        color: theme.colors.outlineVariant,
     },
 });

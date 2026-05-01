@@ -22,21 +22,24 @@ export const theme = {
     ...MD3LightTheme,
     colors: {
         ...MD3LightTheme.colors,
-        primary: '#4CAF50',
-        primaryContainer: '#C8E6C9',
-        secondary: '#FF9800',
-        secondaryContainer: '#FFE0B2',
-        tertiary: '#2196F3',
-        tertiaryContainer: '#BBDEFB',
-        error: '#F44336',
-        errorContainer: '#FFCDD2',
-        background: '#FAFAFA',
+        primary: '#2E7D32',
+        primaryContainer: '#E8F5E9',
+        secondary: '#F57C00',
+        secondaryContainer: '#FFF3E0',
+        tertiary: '#1565C0',
+        tertiaryContainer: '#E3F2FD',
+        error: '#D32F2F',
+        errorContainer: '#FFEBEE',
+        background: '#F5F5F0',
         surface: '#FFFFFF',
-        surfaceVariant: '#F5F5F5',
+        surfaceVariant: '#F0F0EB',
         outline: '#E0E0E0',
-        outlineVariant: '#BDBDBD',
+        outlineVariant: '#9E9E9E',
+        onSurface: '#1B1B1F',
+        onSurfaceVariant: '#44474E',
     },
     fonts: configureFonts({ config: fontConfig }),
+    roundness: 16,
 };
 
 export const spacing = {
@@ -49,9 +52,34 @@ export const spacing = {
 };
 
 export const borderRadius = {
-    sm: 4,
-    md: 8,
-    lg: 12,
-    xl: 16,
+    sm: 6,
+    md: 12,
+    lg: 16,
+    xl: 24,
     full: 9999,
+};
+
+// Shared shadow styles for cards
+export const shadows = {
+    sm: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    md: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+    lg: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 8,
+    },
 };
