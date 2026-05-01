@@ -14,7 +14,6 @@ export interface Product {
     description: string | null;
     image_url: string | null;
     price: number;
-    mrp: number;
     unit: string;
     stock_quantity: number;
     is_available: boolean;
@@ -30,7 +29,6 @@ export interface ProductInsert {
     description?: string | null;
     image_url?: string | null;
     price: number;
-    mrp: number;
     unit: string;
     stock_quantity?: number;
     is_available?: boolean;
@@ -43,7 +41,6 @@ export interface ProductUpdate {
     description?: string | null;
     image_url?: string | null;
     price?: number;
-    mrp?: number;
     unit?: string;
     stock_quantity?: number;
     is_available?: boolean;

@@ -100,8 +100,8 @@ export function OrdersPage() {
                         key={status}
                         onClick={() => setFilter(status)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition ${filter === status
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
                     >
                         {status === 'all' ? 'All' : statusLabels[status]}
@@ -134,10 +134,10 @@ export function OrdersPage() {
                         <div
                             key={order.id}
                             className={`bg-white rounded-xl border p-4 space-y-3 cursor-pointer hover:shadow-md transition ${order.customer_outside && order.status === 'ready'
-                                    ? 'ring-2 ring-orange-400 animate-pulse'
-                                    : order.status === 'placed'
-                                        ? 'ring-2 ring-blue-400'
-                                        : ''
+                                ? 'ring-2 ring-orange-400 animate-pulse'
+                                : order.status === 'placed'
+                                    ? 'ring-2 ring-blue-400'
+                                    : ''
                                 }`}
                             onClick={() => setSelectedOrder(order)}
                         >
@@ -271,12 +271,6 @@ export function OrdersPage() {
                                 <span className="text-gray-500">Subtotal</span>
                                 <span>{formatCurrency(selectedOrder.subtotal)}</span>
                             </div>
-                            {selectedOrder.discount > 0 && (
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-green-600">Discount</span>
-                                    <span className="text-green-600">-{formatCurrency(selectedOrder.discount)}</span>
-                                </div>
-                            )}
                             <div className="flex justify-between font-bold text-lg border-t pt-2">
                                 <span>Total</span>
                                 <span className="text-green-700">{formatCurrency(selectedOrder.total)}</span>

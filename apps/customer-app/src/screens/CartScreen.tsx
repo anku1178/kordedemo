@@ -7,7 +7,7 @@ import { theme } from '../theme';
 
 export function CartScreen() {
     const navigation = useNavigation<any>();
-    const { items, removeItem, updateQuantity, getSubtotal, getDiscount, getTotal, getItemCount } = useCartStore();
+    const { items, removeItem, updateQuantity, getSubtotal, getTotal, getItemCount } = useCartStore();
 
     const renderItem = ({ item }: { item: ReturnType<typeof useCartStore.getState>['items'][0] }) => (
         <View style={styles.cartItem}>
@@ -16,9 +16,6 @@ export function CartScreen() {
                 <Text style={styles.itemUnit}>{item.product.unit}</Text>
                 <View style={styles.itemPriceRow}>
                     <Text style={styles.itemPrice}>₹{item.product.price}</Text>
-                    {item.product.mrp > item.product.price && (
-                        <Text style={styles.itemMrp}>₹{item.product.mrp}</Text>
-                    )}
                 </View>
             </View>
             <View style={styles.quantityContainer}>
@@ -79,12 +76,6 @@ export function CartScreen() {
                     <Text style={styles.summaryLabel}>Items ({getItemCount()})</Text>
                     <Text style={styles.summaryValue}>₹{getSubtotal().toFixed(2)}</Text>
                 </View>
-                {getDiscount() > 0 && (
-                    <View style={styles.summaryRow}>
-                        <Text style={[styles.summaryLabel, { color: theme.colors.primary }]}>Discount</Text>
-                        <Text style={[styles.summaryValue, { color: theme.colors.primary }]}>-₹{getDiscount().toFixed(2)}</Text>
-                    </View>
-                )}
                 <Divider style={styles.divider} />
                 <View style={styles.summaryRow}>
                     <Text style={styles.totalLabel}>Total</Text>

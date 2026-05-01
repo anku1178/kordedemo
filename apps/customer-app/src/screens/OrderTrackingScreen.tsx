@@ -151,12 +151,6 @@ export function OrderTrackingScreen() {
                         <Text style={styles.paymentLabel}>Subtotal</Text>
                         <Text style={styles.paymentValue}>₹{currentOrder.subtotal}</Text>
                     </View>
-                    {currentOrder.discount > 0 && (
-                        <View style={styles.paymentRow}>
-                            <Text style={[styles.paymentLabel, { color: theme.colors.primary }]}>Discount</Text>
-                            <Text style={[styles.paymentValue, { color: theme.colors.primary }]}>-₹{currentOrder.discount}</Text>
-                        </View>
-                    )}
                     <View style={styles.paymentRow}>
                         <Text style={styles.totalLabel}>Total Paid</Text>
                         <Text style={styles.totalValue}>₹{currentOrder.total}</Text>

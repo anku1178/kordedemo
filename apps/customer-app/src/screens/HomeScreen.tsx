@@ -62,9 +62,6 @@ export function HomeScreen() {
                     <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
                     <View style={styles.priceRow}>
                         <Text style={styles.productPrice}>₹{item.price}</Text>
-                        {item.mrp > item.price && (
-                            <Text style={styles.productMrp}>₹{item.mrp}</Text>
-                        )}
                     </View>
                     <Text style={styles.productUnit}>{item.unit}</Text>
                     <View style={styles.stockRow}>

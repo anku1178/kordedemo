@@ -11,7 +11,6 @@ export function ProductsPage() {
     const [form, setForm] = useState<ProductInsert>({
         name: '',
         price: 0,
-        mrp: 0,
         unit: 'pcs',
         stock_quantity: 0,
         is_available: true,
@@ -28,7 +27,7 @@ export function ProductsPage() {
         : products;
 
     const resetForm = () => {
-        setForm({ name: '', price: 0, mrp: 0, unit: 'pcs', stock_quantity: 0, is_available: true, category_id: '' });
+        setForm({ name: '', price: 0, unit: 'pcs', stock_quantity: 0, is_available: true, category_id: '' });
         setEditingId(null);
         setShowForm(false);
     };
@@ -37,7 +36,6 @@ export function ProductsPage() {
         setForm({
             name: product.name,
             price: product.price,
-            mrp: product.mrp,
             unit: product.unit,
             stock_quantity: product.stock_quantity,
             is_available: product.is_available,
@@ -113,29 +111,16 @@ export function ProductsPage() {
                             </select>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={form.price || ''}
-                                    onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">MRP (₹)</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    required
-                                    value={form.mrp || ''}
-                                    onChange={(e) => setForm({ ...form, mrp: parseFloat(e.target.value) || 0 })}
-                                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                                />
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                required
+                                value={form.price || ''}
+                                onChange={(e) => setForm({ ...form, price: parseFloat(e.target.value) || 0 })}
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -181,7 +166,6 @@ export function ProductsPage() {
                                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Name</th>
                                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Category</th>
                                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Price</th>
-                                <th className="text-right px-4 py-3 font-semibold text-gray-600">MRP</th>
                                 <th className="text-left px-4 py-3 font-semibold text-gray-600">Unit</th>
                                 <th className="text-right px-4 py-3 font-semibold text-gray-600">Stock</th>
                                 <th className="text-center px-4 py-3 font-semibold text-gray-600">Available</th>
@@ -194,7 +178,6 @@ export function ProductsPage() {
                                     <td className="px-4 py-3 font-medium text-gray-900">{product.name}</td>
                                     <td className="px-4 py-3 text-gray-500">{product.category?.name || '-'}</td>
                                     <td className="px-4 py-3 text-right font-semibold text-green-700">{formatCurrency(product.price)}</td>
-                                    <td className="px-4 py-3 text-right text-gray-400">{formatCurrency(product.mrp)}</td>
                                     <td className="px-4 py-3 text-gray-500">{product.unit}</td>
                                     <td className="px-4 py-3 text-right">{product.stock_quantity}</td>
                                     <td className="px-4 py-3 text-center">

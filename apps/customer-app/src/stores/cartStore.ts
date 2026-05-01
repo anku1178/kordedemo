@@ -16,7 +16,6 @@ interface CartState {
     clearCart: () => void;
     getItemCount: () => number;
     getSubtotal: () => number;
-    getDiscount: () => number;
     getTotal: () => number;
     hydrate: () => Promise<void>;
 }
@@ -99,13 +98,6 @@ export const useCartStore = create<CartState>((set, get) => ({
     getSubtotal: () => {
         return get().items.reduce(
             (total, item) => total + item.product.price * item.quantity,
-            0
-        );
-    },
-
-    getDiscount: () => {
-        return get().items.reduce(
-            (total, item) => total + (item.product.mrp - item.product.price) * item.quantity,
             0
         );
     },

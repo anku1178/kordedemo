@@ -31,10 +31,6 @@ export function ProductScreen() {
 
     if (!product) return null;
 
-    const discount = product.mrp > product.price
-        ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-        : 0;
-
     const handleAddToCart = () => {
         addItem(product, quantity);
         navigation.navigate('Cart');
@@ -66,14 +62,6 @@ export function ProductScreen() {
 
                     <View style={styles.priceContainer}>
                         <Text style={styles.price}>₹{product.price}</Text>
-                        {product.mrp > product.price && (
-                            <>
-                                <Text style={styles.mrp}>₹{product.mrp}</Text>
-                                <View style={styles.discountBadge}>
-                                    <Text style={styles.discountText}>{discount}% OFF</Text>
-                                </View>
-                            </>
-                        )}
                     </View>
 
                     <Text style={styles.unit}>Unit: {product.unit}</Text>
@@ -179,22 +167,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: '700',
         color: theme.colors.primary,
-    },
-    mrp: {
-        fontSize: 16,
-        color: theme.colors.outlineVariant,
-        textDecorationLine: 'line-through',
-    },
-    discountBadge: {
-        backgroundColor: theme.colors.errorContainer,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-        borderRadius: 4,
-    },
-    discountText: {
-        color: theme.colors.error,
-        fontSize: 12,
-        fontWeight: '700',
     },
     unit: {
         fontSize: 14,

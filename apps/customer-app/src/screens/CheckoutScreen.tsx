@@ -8,7 +8,7 @@ import { theme } from '../theme';
 
 export function CheckoutScreen() {
     const navigation = useNavigation<any>();
-    const { items, getSubtotal, getDiscount, getTotal, clearCart } = useCartStore();
+    const { items, getSubtotal, getTotal, clearCart } = useCartStore();
     const { createOrder, loading } = useOrderStore();
     const [customerOutside, setCustomerOutside] = useState(false);
 
@@ -26,7 +26,7 @@ export function CheckoutScreen() {
                 customerOutside,
                 items: orderItems,
                 subtotal: getSubtotal(),
-                discount: getDiscount(),
+                discount: 0,
                 total: getTotal(),
             });
 
@@ -104,14 +104,6 @@ export function CheckoutScreen() {
                         <Text style={styles.paymentLabel}>Subtotal</Text>
                         <Text style={styles.paymentValue}>₹{getSubtotal().toFixed(2)}</Text>
                     </View>
-                    {getDiscount() > 0 && (
-                        <View style={styles.paymentRow}>
-                            <Text style={[styles.paymentLabel, { color: theme.colors.primary }]}>Discount</Text>
-                            <Text style={[styles.paymentValue, { color: theme.colors.primary }]}>
-                                -₹{getDiscount().toFixed(2)}
-                            </Text>
-                        </View>
-                    )}
                     <Divider style={styles.paymentDivider} />
                     <View style={styles.paymentRow}>
                         <Text style={styles.totalLabel}>Total</Text>

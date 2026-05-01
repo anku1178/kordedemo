@@ -38,9 +38,6 @@ export function CategoryScreen() {
                 <Text style={styles.productUnit}>{item.unit}</Text>
                 <View style={styles.priceRow}>
                     <Text style={styles.productPrice}>₹{item.price}</Text>
-                    {item.mrp > item.price && (
-                        <Text style={styles.productMrp}>₹{item.mrp}</Text>
-                    )}
                 </View>
                 <View style={styles.stockRow}>
                     <View style={[styles.stockDot, { backgroundColor: item.is_available ? '#22c55e' : '#ef4444' }]} />
